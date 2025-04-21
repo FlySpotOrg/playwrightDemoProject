@@ -2,7 +2,7 @@ import { PlaywrightTestConfig } from '@playwright/test';
 
 
 const config: PlaywrightTestConfig = {
-  testDir: './tests',
+  testDir: './src/features',
   timeout: 30000,
   expect: {
     timeout: 5000
@@ -17,14 +17,11 @@ const config: PlaywrightTestConfig = {
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['html'],
-    ['list']
+      ['html']
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'https://automationintesting.online',
-
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     video: 'on-first-retry',

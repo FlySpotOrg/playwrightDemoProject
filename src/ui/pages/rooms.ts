@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
-import {FrontPage} from "./front-page";
-import {ContactForm} from "../../types/types";
+import {FrontPage} from "@ui/pages/front-page";
+import {ContactForm} from "@types";
 
 export class RoomsPage extends FrontPage {
 
@@ -9,9 +9,9 @@ export class RoomsPage extends FrontPage {
             .getByRole('link', { name: 'Book Now'}).click();
     }
 
-    async selectRoomType(roomType: string) {
+    async selectRoom(description: string) {
         await this.page.locator(
-            `.card:has(.card-title:has-text("${roomType}")) .btn-primary`).click();
+            `.card:has(.card-title:has-text("${description}")) .btn-primary`).click();
     }
 
     async navigateToContact() {

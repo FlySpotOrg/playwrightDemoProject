@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@api/*": ["src/api/*"],
+      "@ui/*": ["src/ui/*"],
+      "@test-base": ["src/features/test-base"],
+      "@types": ["src/types/types"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"]
+    },
+    "allowSyntheticDefaultImports": true
+  }
+}

@@ -1,28 +1,25 @@
-import { test } from '@playwright/test';
-import { HomePage, RoomsPage, ReservationPage, AdminPage } from '../../ui/pages';
-import { Credentials, BookingDetails, ContactForm } from "../../types/types";
+import { test } from '@test-base';
+import { HomePage, RoomsPage, ReservationPage, AdminPage } from '@ui/pages';
+import { Credentials, BookingDetails, ContactForm } from "@types";
+import { admin } from '@config/auth.config'
+
+let homePage: HomePage;
+let roomsPage: RoomsPage;
+let reservationPage: ReservationPage;
+let adminPage: AdminPage;
 
 test.describe('Hotel Booking Website Tests', () => {
-  let homePage: HomePage;
-  let roomsPage: RoomsPage;
-  let reservationPage: ReservationPage;
-  let adminPage: AdminPage;
 
-  
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
     roomsPage = new RoomsPage(page);
     reservationPage = new ReservationPage(page);
     adminPage = new AdminPage(page);
-
-    await test.step('Given I am on the home page', async () => {
-      await homePage.navigateToHome();
-    });
-
   });
 
+  test('User should be able to book a room', { tag: ['@smoke', '@regression'] },
+      async ({ authHelper, bookingApiHelper, roomApiHelper }) => {
 
-  test('User should be able to book a room', async ({}) => {
     const bookingDetails: BookingDetails = {
       firstName: 'John',
       lastName: 'Doe',
@@ -30,9 +27,24 @@ test.describe('Hotel Booking Website Tests', () => {
       phone: '12345678900'
     };
 
-    await test.step('When I initiate a Double room reservation', async () => {
+    await test.step('Given I have a free Single room', async () => {
+      await authHelper.login_as(admin);
+      const allRooms = await roomApiHelper.getAllRooms();
+      const singleRoom = allRooms.find(room => room.type === 'Single');
+      if (!singleRoom || !singleRoom.roomid) {
+        throw new Error('No Single room found');
+      }
+      await bookingApiHelper.deleteAllBookings(singleRoom.roomid);
+      await authHelper.logout();
+    });
+
+    await test.step('And I am on the home page', async () => {
+      await homePage.navigateToHome();
+    });
+
+    await test.step('When I initiate a room reservation', async () => {
       await roomsPage.clickBookNowButton();
-      await roomsPage.selectRoomType('Double');
+      await roomsPage.selectRoom('Single');
       await reservationPage.clickReserveNow();
     });
 
@@ -40,7 +52,7 @@ test.describe('Hotel Booking Website Tests', () => {
       await reservationPage.fillBookingDetails(bookingDetails);
       await reservationPage.clickReserveNow();
     });
-    
+
     await test.step('Then confirmation message should be displayed', async () => {
       await reservationPage.verifyBookingConfirmationMessage();
     });
@@ -48,7 +60,8 @@ test.describe('Hotel Booking Website Tests', () => {
   });
 
 
-  test('User should be able to submit contact form', async ({}) => {
+  test('User should be able to submit contact form', { tag: '@regression' },
+      async ({ }) => {
     const contactFormData: ContactForm = {
       name: 'Jane Smith',
       email: 'jane.smith@example.com',
@@ -57,6 +70,10 @@ test.describe('Hotel Booking Website Tests', () => {
       message: 'This is a test message'
     }
 
+    await test.step('Given I am on the home page', async () => {
+      await homePage.navigateToHome();
+    });
+
     await test.step('When I navigate to the contact page', async () => {
       await roomsPage.navigateToContact();
     });
@@ -64,7 +81,7 @@ test.describe('Hotel Booking Website Tests', () => {
     await test.step('And I fill out the contact form', async () => {
       await roomsPage.fillContactForm(contactFormData);
     });
-    
+
     await test.step('Then I should be able to submit the form successfully', async () => {
       await roomsPage.submitContactForm();
       await roomsPage.verifyContactSubmissionMessage(contactFormData.name);
@@ -73,23 +90,28 @@ test.describe('Hotel Booking Website Tests', () => {
   });
 
 
-  test('Admin should handle login', async ({}) => {
+  test('Admin should handle login', async ({ }) => {
     const adminCredentials: Credentials = {
-      login: 'admin',
+      username: 'admin',
       password: 'password'
     }
+
+    await test.step('Given I am on the home page', async () => {
+      await homePage.navigateToHome();
+    });
 
     await test.step('When I navigate to the admin page', async () => {
       await roomsPage.navigateToAdmin();
     });
-    
+
     await test.step('And I enter valid admin credentials', async () => {
       await adminPage.loginAsAdmin(adminCredentials);
     });
-    
+
     await test.step('Then I should see the admin dashboard', async () => {
       await adminPage.verifyAdminNavigation();
     });
   });
 
-}); 
+});
+

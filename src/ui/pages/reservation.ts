@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
-import {FrontPage} from "./front-page";
-import {BookingDetails} from "../../types/types";
+import {FrontPage} from "@ui/pages/front-page";
+import {BookingDetails} from "@types";
 
 export class ReservationPage extends FrontPage {
 

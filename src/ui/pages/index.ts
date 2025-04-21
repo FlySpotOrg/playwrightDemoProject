@@ -1,7 +1,7 @@
-import { HomePage } from './home';
-import { RoomsPage } from './rooms';
-import { ReservationPage } from './reservation';
-import { AdminPage } from './admin';
+import { HomePage } from '@ui/pages/home';
+import { RoomsPage } from '@ui/pages/rooms';
+import { ReservationPage } from '@ui/pages/reservation';
+import { AdminPage } from '@ui/pages/admin';
 
 export {
   HomePage,

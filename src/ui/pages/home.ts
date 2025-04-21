@@ -1,4 +1,4 @@
-import {FrontPage} from "./front-page";
+import {FrontPage} from "@ui/pages/front-page";
 
 export class HomePage extends FrontPage {
 }

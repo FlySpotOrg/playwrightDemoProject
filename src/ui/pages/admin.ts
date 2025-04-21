@@ -1,5 +1,5 @@
 import { Page, expect } from '@playwright/test';
-import {Credentials} from "../../types/types";
+import {Credentials} from "@types";
 
 export class AdminPage {
     private page: Page;
@@ -9,7 +9,7 @@ export class AdminPage {
     }
 
     async loginAsAdmin(adminCredentials: Credentials) {
-        await this.page.getByLabel('Username').fill(adminCredentials.login);
+        await this.page.getByLabel('Username').fill(adminCredentials.username);
         await this.page.getByPlaceholder('Password').fill(adminCredentials.password);
         await this.page.locator('#doLogin').click();
     }
