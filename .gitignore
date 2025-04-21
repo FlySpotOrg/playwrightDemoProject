@@ -1,0 +1,6 @@
+/.idea/
+/node_modules/
+/test-results/
+/playwright-report/
+/logs/
+/playwright/.cache/
