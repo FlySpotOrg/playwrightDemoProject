@@ -1,24 +1,61 @@
 # playwrightDemoProject
 
-*=== Run all tests in UI mode ===*
-npm run test:all:head
+## Running Tests
 
-*=== Run all tests in headless mode ===*
+### UI Mode
+
+```bash
+npm run test:all:head
+```
+
+### Headless Mode
+
+```bash
+# Run all tests
 npm run test:all:headless
 
-*=== Run all UI tests in headless mode ===*
+# Run UI tests only
 npm run test:ui
 
-*=== Run all API tests in headless mode ===*
+# Run API tests only
 npm run test:api
 
-*=== Run all Smoke tests in headless mode (1 UI and 1 API)===*
+# Run Smoke tests (1 UI and 1 API)
 npm run test:smoke
 
-*=== Run all Regression tests in headless mode (2 UI and 2 API)===*
+# Run Regression tests (2 UI and 2 API)
 npm run test:regression
+```
 
-===================================================
-TEST REPORT LOCATED IN playwright-report/index.html
-===================================================
+## Test Reports
 
+Test reports can be found in:
+
+- `playwright-report/index.html` - Playwright HTML report
+- `allure-report/index.html` - Allure report
+
+### Generating Allure Reports
+
+1. Run tests to generate results:
+
+   ```bash
+   npm run test:all:headless
+   ```
+
+2. Generate the report:
+
+   ```bash
+   npm run allure:generate
+   ```
+
+3. View the report:
+
+   ```bash
+   npm run allure:open
+   ```
+
+   Or generate and view immediately:
+
+   ```bash
+   npm run allure:serve
+   ```

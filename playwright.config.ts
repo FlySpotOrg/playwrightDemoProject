@@ -1,11 +1,10 @@
-import { PlaywrightTestConfig } from '@playwright/test';
-
+import { PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
-  testDir: './src/features',
+  testDir: "./src/features",
   timeout: 30000,
   expect: {
-    timeout: 5000
+    timeout: 5000,
   },
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -16,30 +15,27 @@ const config: PlaywrightTestConfig = {
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-      ['html']
-  ],
+  reporter: [["html"], ["allure-playwright"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'https://automationintesting.online',
+    baseURL: "https://automationintesting.online",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-    video: 'on-first-retry',
+    trace: "on-first-retry",
+    video: "on-first-retry",
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'API Tests',
+      name: "API Tests",
       testMatch: /.*\.api\.spec\.ts/,
     },
     {
-      name: 'UI Tests',
+      name: "UI Tests",
       testMatch: /.*\.spec\.ts/,
       testIgnore: /.*\.api\.spec\.ts/,
-    }
+    },
   ],
-
 };
 
 export default config;

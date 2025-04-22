@@ -1,11 +1,11 @@
-import { test as baseTest, expect } from '@playwright/test';
-import AuthHelper from '@api/auth-helper.js';
-import { logger } from "@utils/logger";
-import { Record } from "@types";
-import ApiClient from "@/api/api-client";
-import { CleanupHelper } from "@api/cleanup-helper";
-import { RoomApiHelper } from "@api/room-helper";
-import { BookingApiHelper } from "@api/booking-helper";
+import { test as baseTest, expect } from "@playwright/test";
+import AuthHelper from "../api/auth-helper";
+import { logger } from "../utils/logger";
+import { Record } from "../types/types";
+import ApiClient from "../api/api-client";
+import { CleanupHelper } from "../api/cleanup-helper";
+import { RoomApiHelper } from "../api/room-helper";
+import { BookingApiHelper } from "../api/booking-helper";
 
 export const test = baseTest.extend<{
   apiClient: ApiClient;
@@ -13,9 +13,8 @@ export const test = baseTest.extend<{
   roomApiHelper: RoomApiHelper;
   bookingApiHelper: BookingApiHelper;
   logger: typeof logger;
-  registerCleanup: (entry: { type: string, data: Record } | { type: string, data: Record }[]) => void;
+  registerCleanup: (entry: { type: string; data: Record } | { type: string; data: Record }[]) => void;
 }>({
-
   apiClient: async ({}, use) => {
     const client = new ApiClient();
     await use(client);
@@ -42,10 +41,12 @@ export const test = baseTest.extend<{
     await cleanupHelper.cleanup();
   },
 
-  logger: [async ({}, use) => {
-    await use(logger);
-  }, { auto: true }],
-
+  logger: [
+    async ({}, use) => {
+      await use(logger);
+    },
+    { auto: true },
+  ],
 });
 
 export { expect };
