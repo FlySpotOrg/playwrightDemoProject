@@ -8,6 +8,9 @@ on:
 jobs:
   test-and-publish:
     runs-on: ubuntu-latest
+    env:
+      ADMIN_USERNAME: ${{ secrets.API_USER }}
+      ADMIN_PASSWORD: ${{ secrets.API_PASS }}  
     steps:
       # 1. Checkout the code (full history so we can later checkout gh-pages)
       - name: Checkout code

@@ -1,6 +1,6 @@
-import AxiosInstance from "axios";
 import { logger } from "../utils/logger";
 import ApiClient from "../api/api-client";
+import AxiosInstance from "axios";
 import { Credentials } from "../types/types";
 import { status_is_ok } from "../api/api-status-check";
 
@@ -9,7 +9,7 @@ export default class AuthHelper {
 
   async login_as(credentials: Credentials): Promise<void> {
     logger.debug(`The user ${credentials.username} is logged in.`);
-    const response = await this.apiClient.post("/auth/login", { data: credentials });
+    const response = await this.apiClient.post("/auth/login", { data: credentials } );
     status_is_ok(response, 200);
 
     if ("token" in response.data) {
