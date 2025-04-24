@@ -1,5 +1,5 @@
-import { Booking } from "@types";
-import ApiClient from "@/api/api-client";
+import { Booking } from "../types/types";
+import ApiClient from "./api-client";
 
 export class BookingApiHelper {
   private apiClient: ApiClient;

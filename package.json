@@ -25,10 +25,12 @@
     "@playwright/test": "^1.52.0",
     "@types/axios": "^0.9.36",
     "@types/chai": "^5.2.1",
+    "@types/dotenv": "^6.1.1",
     "@types/lodash": "^4.17.16",
     "@types/node": "^22.14.1",
     "@types/superagent": "^8.1.9",
     "allure-playwright": "^3.2.1",
+    "dotenv": "^16.5.0",
     "gherkin-parse": "^1.0.6",
     "yargs": "^17.3.0"
   },
@@ -36,7 +38,6 @@
     "adm-zip": "^0.5.16",
     "axios": "^1.8.4",
     "chai": "^5.2.0",
-    "dotenv": "^16.5.0",
     "lodash": "^4.17.21",
     "superagent": "^10.2.0",
     "winston": "^3.17.0"
