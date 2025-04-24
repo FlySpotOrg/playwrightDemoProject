@@ -1,7 +1,7 @@
-import * as dotenv from "dotenv";
 import fs from "fs";
 import _ from "lodash";
 import path from "path";
+import dotenv from "dotenv";
 
 import AssertThatPlugin from "../plugins/assert-that";
 import type { FeatureJSON } from "../plugins/assert-that/interfaces";
