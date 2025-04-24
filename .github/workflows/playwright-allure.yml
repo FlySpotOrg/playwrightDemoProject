@@ -39,12 +39,12 @@ jobs:
         run: npm run test:smoke
 
       # 5. Fetch existing gh-pages branch (to grab previous history)
-      - name: Fetch existing gh-pages
+      - name: Fetch existing ci_pipeline
         uses: actions/checkout@v3
         with:
           repository: ${{ github.repository }}
-          ref: gh-pages
-          path: gh-pages
+          ref: ci_pipeline
+          path: ci_pipeline
           fetch-depth: 0
         continue-on-error: true    # branch may not exist on first run
 
@@ -52,8 +52,8 @@ jobs:
       - name: Generate Allure report
         run: |
           mkdir -p history
-          if [ -d gh-pages/history ]; then
-            cp -R gh-pages/history/* history/
+          if [ -d ci_pipeline/history ]; then
+            cp -R ci_pipeline/history/* history/
           fi
           npx allure generate ./allure-results \
             --clean \
