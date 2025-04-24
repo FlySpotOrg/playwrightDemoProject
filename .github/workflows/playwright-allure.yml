@@ -30,7 +30,7 @@ jobs:
 
       # 4. Run your Playwright tests (writes raw results into allure-results/)
       - name: Run Playwright tests
-        run: npx run test:smoke
+        run: npm run test:smoke
 
       # 5. Fetch existing gh-pages branch (to grab previous history)
       - name: Fetch existing gh-pages
