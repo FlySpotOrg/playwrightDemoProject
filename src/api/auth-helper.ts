@@ -1,6 +1,6 @@
 import AxiosInstance from "axios";
 import { logger } from "../utils/logger";
-import ApiClient from "..//api/api-client";
+import ApiClient from "../api/api-client";
 import { Credentials } from "../types/types";
 import { status_is_ok } from "../api/api-status-check";
 
