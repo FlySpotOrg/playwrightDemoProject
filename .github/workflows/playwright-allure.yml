@@ -33,7 +33,7 @@ jobs:
         run: npx playwright install
 
       - name: Install Allure CLI
-        run: npm install -D allure-commandline
+        run: npm install -g allure-commandline@2.13.9
 
       # 4. Run your Playwright tests (writes raw results into allure-results/)
       - name: Run Playwright tests
@@ -55,7 +55,7 @@ jobs:
           if [ -d gh-pages/history ]; then
             cp -R gh-pages/history/* history/
           fi
-          npx allure generate ./allure-results \
+          allure generate ./allure-results \
             --clean \
             --history history \
             --output allure-report
