@@ -9,8 +9,8 @@ jobs:
   test-and-publish:
     runs-on: ubuntu-latest
     env:
-      ADMIN_USERNAME: ${{ secrets.ADMIN_PASSWORD }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_USERNAME }}  
+      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}  
     steps:
       # 1. Checkout the code (full history so we can later checkout gh-pages)
       - name: Checkout code
