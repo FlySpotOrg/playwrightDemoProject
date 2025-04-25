@@ -12,3 +12,6 @@ jobs:
     with:
       run_branch: ${{ github.event.pull_request.head.ref || github.ref_name }}
       test_scope: 'smoke'
+    secrets:
+      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
