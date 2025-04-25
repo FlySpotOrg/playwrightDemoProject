@@ -101,7 +101,7 @@ jobs:
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           owner: FlySpotOrg
-          repo: playwrightDemoProject
+          repository: playwrightDemoProject
           sha: ${{ github.event.pull_request.head.sha || github.sha }}
           state: success
           context: "Playwright / ${{ env.TEST_SCOPE }} tests"

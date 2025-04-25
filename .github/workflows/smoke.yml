@@ -20,4 +20,4 @@ jobs:
     uses: ./.github/workflows/playwright-test-run.yml
     with:
       run_branch: ${{ github.event.pull_request.head.ref || github.ref_name }}
-      test_scope: ${{ github.event.inputs.test_scope }}
+      test_scope: 'smoke'
