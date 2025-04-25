@@ -12,6 +12,13 @@ node_modules/
 /allure-report/
 /allure-results/
 
+# Local logs
+logs/
+*.log
 
+# Downloaded test artifacts
+download/
 
+# IDE
+.idea/
 
