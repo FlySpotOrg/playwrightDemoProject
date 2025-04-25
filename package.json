@@ -29,10 +29,12 @@
     "@types/lodash": "^4.17.16",
     "@types/node": "^22.15.2",
     "@types/superagent": "^8.1.9",
+    "allure-commandline": "^2.33.0",
     "allure-playwright": "^3.2.1",
     "dotenv": "^16.5.0",
     "gherkin-parse": "^1.0.6",
-    "yargs": "^17.3.0"
+    "yargs": "^17.3.0",
+    "playwright": "^1.52.0"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",

@@ -1,8 +1,8 @@
 import { TestInfo } from '@playwright/test';
-import { Record } from "@types";
-import ApiClient from "@/api/api-client";
-import AuthHelper from "@api/auth-helper";
-import { admin } from "src/config/auth.config";
+import { Record } from "../types/types";
+import ApiClient from "./api-client";
+import AuthHelper from "./auth-helper";
+import { admin } from "../config/auth.config";
 
 export class CleanupHelper {
   private records: { type: string, data: Record }[] = [];
