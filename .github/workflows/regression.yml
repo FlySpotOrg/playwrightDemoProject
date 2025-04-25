@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  smoke-tests:
+  regression-tests:
     uses: ./.github/workflows/playwright-test-run.yml
     with:
       run_branch: ${{ github.event.pull_request.head.ref || github.ref_name }}
