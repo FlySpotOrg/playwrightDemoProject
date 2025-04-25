@@ -34,7 +34,7 @@ Test reports can be found in:
 - `playwright-report/index.html` - Playwright HTML report
 - `allure-report/index.html` - Allure report
 
-### Generating Allure Reports
+### Generating Allure Reports 
 
 1. Run tests to generate results:
 
