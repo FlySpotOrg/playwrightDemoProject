@@ -40,7 +40,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          ref: ci_pipeline
+          ref: gh-pages
           path: gh-pages
     
       - name: Build test report
@@ -56,5 +56,5 @@ jobs:
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: ci_pipeline
+          publish_branch: gh-pages
           publish_dir: allure-history
