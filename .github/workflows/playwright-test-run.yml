@@ -72,21 +72,13 @@ jobs:
         continue-on-error: true
 
       - name: Build & publish Allure report
+        uses: simple-elf/allure-report-action@v1.7
         if: always()
-        run: |
-          # preserve history
-          if [ -d gh-pages/allure-history ]; then
-            mv gh-pages/allure-history history
-          else
-            mkdir history
-          fi
-          # generate into docs/
-          npx allure generate ./allure-results \
-            --clean \
-            --history history \
-            --output docs
-          touch docs/.nojekyll
-        id: build-report
+        id: allure-report
+        with:
+            gh_pages: gh-pages
+            allure_history: allure-history
+            allure_results: allure-results
 
       - name: Deploy Allure to GitHub Pages
         if: always()
