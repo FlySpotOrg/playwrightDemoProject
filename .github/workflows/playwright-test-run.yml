@@ -1,0 +1,103 @@
+name: Playwright → Parametrized Tests & Allure
+
+on:
+  # Trigger on pull requests to main
+  pull_request:
+    branches: [ main ]
+
+  # Manual trigger, with inputs for branch & scope
+  workflow_dispatch:
+    inputs:
+      run_branch:
+        description: 'Select test branch'
+        required: false
+        default: 'main'
+      test_scope:
+        description: 'Select test scope'
+        type: choice
+        required: false
+        default: 'regression'
+        options:
+          - smoke
+          - regression
+
+jobs:
+  run-and-publish:
+    runs-on: ubuntu-latest
+    env:
+      # your secrets
+      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      # determine scope: for PRs, default to regression; for manual, use input
+      TEST_SCOPE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_scope || 'regression' }}
+      # determine checkout ref:
+      CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_branch || github.event.pull_request.head.ref }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+          ref: ${{ env.CHECKOUT_REF }}
+
+      - name: Setup Node.js & Tools
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies, Allure CLI & Playwright
+        run: |
+          npm ci
+          npm install -D allure-commandline
+          npx playwright install
+
+      - name: Run Playwright tests (${{ env.TEST_SCOPE }})
+        run: npm run test:${{ env.TEST_SCOPE }}
+
+      - name: Load Allure report history
+        if: always()
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 1
+        continue-on-error: true
+
+      - name: Build & publish Allure report
+        if: always()
+        run: |
+          # preserve history
+          if [ -d gh-pages/allure-history ]; then
+            mv gh-pages/allure-history history
+          else
+            mkdir history
+          fi
+          # generate into docs/
+          npx allure generate ./allure-results \
+            --clean \
+            --history history \
+            --output docs
+          touch docs/.nojekyll
+        id: build-report
+
+      - name: Deploy Allure to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs
+          publish_branch: gh-pages
+
+      - name: Comment status & report link
+        if: always()
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          owner: FlySpotOrg
+          repo: playwrightDemoProject
+          sha: ${{ github.event.pull_request.head.sha || github.sha }}
+          state: success
+          context: "Playwright / ${{ env.TEST_SCOPE }} tests"
+          description: "See Allure report →"
+          target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/${{ github.run_number }}

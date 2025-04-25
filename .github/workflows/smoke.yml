@@ -1,9 +1,10 @@
-name: Sanity Test Run on Commit
+name: Smoke Test Run
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches:
-      - ci_pipeline
+      - main
 
 jobs:
   test-and-publish:
@@ -24,18 +25,15 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Install Allure CLI locally
-        run: npm install -D allure-commandline
-
-      - name: Install Playwright dependencies
-        run: npx playwright install
+        run: |
+          npm ci
+          npm install -D allure-commandline
+          npx playwright install
 
       - name: Run Playwright tests
         run: npm run test:smoke
 
-      - name: Load test report history
+      - name: Load Allure report history
         uses: actions/checkout@v3
         if: always()
         continue-on-error: true
@@ -43,7 +41,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Build test report
+      - name: Build Allure report
         uses: simple-elf/allure-report-action@v1.7
         if: always()
         with:
@@ -51,10 +49,22 @@ jobs:
           allure_history: allure-history
           allure_results: allure-results
 
-      - name: Publish test report
+      - name: Publish Allure report
         uses: peaceiris/actions-gh-pages@v3
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+
+      - name: Post Allure report link to the PR comment
+        if: always()
+        uses: Sibz/github-status-action@v1
+        with: 
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          owner: FlySpotOrg
+          repository: playwrightDemoProject
+          context: 'Test report'
+          state: success
+          sha: ${{ github.event.pull_request.head.sha }}
+          target_url: https://FlySpotOrg.github.io/playwrightDemoProject/${{ github.run_number }}
