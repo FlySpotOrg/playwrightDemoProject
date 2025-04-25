@@ -1,0 +1,71 @@
+name: Merge to Main → Regression Test Run
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -D allure-commandline
+          npx playwright install
+
+      - name: Run Playwright tests
+        run: npm run test:regression
+
+      - name: Load test report history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build Allure report
+        uses: simple-elf/allure-report-action@v1.7
+        if: always()
+        id: allure-report
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: allure-results
+
+      - name: Publish Allure report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      - name: Post Allure report link to the PR comment
+        if: always()
+        uses: Sibz/github-status-action@v1
+        with: 
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          owner: FlySpotOrg
+          repository: playwrightDemoProject
+          context: 'Test report'
+          state: success
+          sha: ${{ github.event.pull_request.head.sha }}
+          target_url: https://FlySpotOrg.github.io/playwrightDemoProject/${{ github.run_number }}
