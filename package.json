@@ -27,7 +27,7 @@
     "@types/chai": "^5.2.1",
     "@types/dotenv": "^6.1.1",
     "@types/lodash": "^4.17.16",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.2",
     "@types/superagent": "^8.1.9",
     "allure-playwright": "^3.2.1",
     "dotenv": "^16.5.0",
