@@ -5,18 +5,9 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      run_branch:
-        required: false
-        type: string
-        default: 'main'
-      test_scope:
-        required: false
-        type: string
-        default: 'smoke'
 
 jobs:
-  playwright:
+  smoke-tests:
     uses: ./.github/workflows/playwright-test-run.yml
     with:
       run_branch: ${{ github.event.pull_request.head.ref || github.ref_name }}

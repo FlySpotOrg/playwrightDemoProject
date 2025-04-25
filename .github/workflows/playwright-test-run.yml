@@ -16,10 +16,6 @@ on:
 
   workflow_dispatch:
     inputs:
-      run_branch:
-        description: 'Select test branch'
-        required: false
-        default: 'main'
       test_scope:
         description: 'Select test scope'
         type: choice
@@ -31,7 +27,6 @@ on:
 
 jobs:
   run-and-publish:
-    name: 'Run Playwright tests & Publish Allure report'
     runs-on: ubuntu-latest
     env:
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
