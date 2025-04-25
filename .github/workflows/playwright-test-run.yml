@@ -1,11 +1,19 @@
-name: Playwright → Parametrized Tests & Allure
+name: Playwright Test Runner
 
 on:
-  # Trigger on pull requests to main
-  pull_request:
-    branches: [ main ]
+  workflow_call:
+    inputs:
+      run_branch:
+        description: 'Branch to run tests on'
+        required: true
+        type: string
+        default: 'main'
+      test_scope:
+        description: 'Test scope to run'
+        required: true
+        type: string
+        default: 'regression'
 
-  # Manual trigger, with inputs for branch & scope
   workflow_dispatch:
     inputs:
       run_branch:
@@ -23,15 +31,13 @@ on:
 
 jobs:
   run-and-publish:
+    name: 'Run Playwright tests & Publish Allure report'
     runs-on: ubuntu-latest
     env:
-      # your secrets
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      # determine scope: for PRs, default to regression; for manual, use input
-      TEST_SCOPE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_scope || 'regression' }}
-      # determine checkout ref:
-      CHECKOUT_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_branch || github.event.pull_request.head.ref }}
+      TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
+      CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
 
     steps:
       - name: Checkout code
