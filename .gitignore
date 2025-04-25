@@ -12,6 +12,7 @@ node_modules/
 /allure-report/
 /allure-results/
 
-
-
+.idea/
+download/
+logs/
 
