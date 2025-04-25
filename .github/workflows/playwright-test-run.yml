@@ -13,6 +13,11 @@ on:
         required: true
         type: string
         default: 'regression'
+    secrets:
+      ADMIN_USERNAME:
+        required: true
+      ADMIN_PASSWORD:
+        required: true
 
   workflow_dispatch:
     inputs:
@@ -29,8 +34,6 @@ jobs:
   run-and-publish:
     runs-on: ubuntu-latest
     env:
-      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
 
@@ -54,6 +57,9 @@ jobs:
           npx playwright install
 
       - name: Run Playwright tests (${{ env.TEST_SCOPE }})
+        env:
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:${{ env.TEST_SCOPE }}
 
       - name: Load Allure report history
