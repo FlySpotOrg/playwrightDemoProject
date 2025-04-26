@@ -1,0 +1,24 @@
+# Environment variables
+.env
+
+# Node modules
+node_modules/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/allure-report/
+/allure-results/
+
+# Local logs
+logs/
+*.log
+
+# Downloaded test artifacts
+download/
+
+# IDE
+.idea/
+
