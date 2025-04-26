@@ -36,6 +36,8 @@ jobs:
     env:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
+      SHORT_SHA: ${{ github.sha }}
+      RUN_FOLDER: run-${{ github.run_number }}-${{ github.sha }}
 
     steps:
       - name: Checkout code
@@ -62,7 +64,8 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:${{ env.TEST_SCOPE }}
 
-      - name: Load Allure report history
+      # Checkout gh-pages branch separately
+      - name: Checkout gh-pages branch
         if: always()
         uses: actions/checkout@v3
         with:
@@ -70,21 +73,30 @@ jobs:
           path: gh-pages
         continue-on-error: true
 
-      - name: Build & publish Allure report
-        uses: simple-elf/allure-report-action@v1.7
+      # Prepare deployment folder
+      - name: Prepare Allure Report for Deployment
         if: always()
-        with:
-            gh_pages: gh-pages
-            allure_history: allure-history
-            allure_results: allure-results
+        run: |
+          export SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          export RUN_FOLDER="run-${{ github.run_number }}-${SHORT_SHA}"
+          mkdir -p gh-pages/${RUN_FOLDER}
+          cp -r allure-results/* gh-pages/${RUN_FOLDER}/ || echo "No allure-results found"
+          touch gh-pages/.nojekyll
 
-      - name: Deploy Allure to GitHub Pages
+      - name: Deploy Allure Report to GitHub Pages
         if: always()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-history
-          publish_branch: gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Add Playwright Allure Report ${{ env.TEST_SCOPE }} - run #${{ github.run_number }}"
+            git push origin gh-pages
+          fi
 
       - name: Comment status & report link
         if: always()
@@ -97,4 +109,4 @@ jobs:
           state: success
           context: "Playwright / ${{ env.TEST_SCOPE }} tests"
           description: "See Allure report →"
-          target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/${{ github.run_number }}
+          target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/run-${{ github.run_number }}-${{ github.sha }}
