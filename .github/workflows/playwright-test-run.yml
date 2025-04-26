@@ -86,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: gh-pages/
+          path: gh-pages
 
   deploy:
     runs-on: ubuntu-latest
