@@ -108,15 +108,15 @@ jobs:
       #       git push origin gh-pages
       #     fi
 
-      - name: Comment status & report link
-        if: always()
-        uses: Sibz/github-status-action@v1
-        with:
-          authToken: ${{ secrets.GITHUB_TOKEN }}
-          owner: FlySpotOrg
-          repository: playwrightDemoProject
-          sha: ${{ github.event.pull_request.head.sha || github.sha }}
-          state: success
-          context: "Playwright / ${{ env.TEST_SCOPE }} tests"
-          description: "See Allure report →"
-          target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/run-${{ github.run_number }}
+      # - name: Comment status & report link
+      #   if: always()
+      #   uses: Sibz/github-status-action@v1
+      #   with:
+      #     authToken: ${{ secrets.GITHUB_TOKEN }}
+      #     owner: FlySpotOrg
+      #     repository: playwrightDemoProject
+      #     sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      #     state: success
+      #     context: "Playwright / ${{ env.TEST_SCOPE }} tests"
+      #     description: "See Allure report →"
+      #     target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/run-${{ github.run_number }}
