@@ -98,7 +98,7 @@ jobs:
 
     steps:
       - name: Download Test Report Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
           name: test-report
           path: gh-pages
