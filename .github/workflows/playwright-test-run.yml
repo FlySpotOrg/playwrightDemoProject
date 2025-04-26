@@ -18,6 +18,8 @@ on:
         required: true
       ADMIN_PASSWORD:
         required: true
+      GITHUB_TOKEN:
+        required: true
 
   workflow_dispatch:
     inputs:
@@ -33,6 +35,9 @@ on:
 jobs:
   run-and-publish:
     runs-on: ubuntu-latest
+    outputs:
+      test_scope: ${{ env.TEST_SCOPE }}
+      run_folder: ${{ env.RUN_FOLDER }}
     env:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
@@ -77,7 +82,6 @@ jobs:
       - name: Prepare Allure Report for Deployment
         if: always()
         run: |
-          export RUN_FOLDER="run-${{ github.run_number }}"
           mkdir -p gh-pages/${RUN_FOLDER}
           cp -r allure-results/* gh-pages/${RUN_FOLDER}/ || echo "No allure-results found"
           touch gh-pages/.nojekyll
@@ -87,7 +91,6 @@ jobs:
         uses: actions/upload-pages-artifact@v2
         with:
           path: gh-pages/${{ env.RUN_FOLDER }}
-
 
   deploy:
     # Add a dependency to the build job
@@ -108,7 +111,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
+        uses: actions/deploy-pages@v2
 
       # - name: Deploy to GitHub Pages
       #   if: always()
