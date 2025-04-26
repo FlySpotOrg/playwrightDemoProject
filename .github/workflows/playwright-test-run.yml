@@ -89,7 +89,7 @@ jobs:
 
       - name: Upload Allure Report as Pages artifact
         if: always()
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: gh-pages/${{ env.RUN_FOLDER }}
 
