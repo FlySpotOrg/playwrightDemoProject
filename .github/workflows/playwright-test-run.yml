@@ -32,17 +32,20 @@ on:
           - smoke
           - regression
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   run-and-publish:
     runs-on: ubuntu-latest
     outputs:
-      test_scope: ${{ env.TEST_SCOPE }}
-      run_folder: ${{ env.RUN_FOLDER }}
+      run_folder: ${{ steps.set-run-folder.outputs.run_folder }}
+
     env:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
-      SHORT_SHA: ${{ github.sha }}
-      RUN_FOLDER: run-${{ github.run_number }}
 
     steps:
       - name: Checkout code
@@ -69,80 +72,42 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:${{ env.TEST_SCOPE }}
 
-      # Checkout gh-pages branch separately
-      - name: Checkout gh-pages branch
-        if: always()
-        uses: actions/checkout@v3
-        with:
-          ref: gh-pages
-          path: gh-pages
-          token: ${{ secrets.WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+      - name: Set run folder name
+        id: set-run-folder
+        run: echo "run_folder=run-${{ github.run_number }}" >> $GITHUB_OUTPUT
 
-      # Prepare deployment folder
-      - name: Prepare Allure Report for Deployment
-        if: always()
+      - name: Prepare Allure Report
         run: |
-          mkdir -p gh-pages/${RUN_FOLDER}
-          cp -r allure-results/* gh-pages/${RUN_FOLDER}/ || echo "No allure-results found"
+          mkdir -p gh-pages/${{ steps.set-run-folder.outputs.run_folder }}
+          cp -r allure-results/* gh-pages/${{ steps.set-run-folder.outputs.run_folder }}/ || echo "No allure-results found"
           touch gh-pages/.nojekyll
 
-      - name: Upload Allure Report as Pages artifact
-        if: always()
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload Test Report Artifact
+        uses: actions/upload-artifact@v3
         with:
-          path: gh-pages/${{ env.RUN_FOLDER }}
+          name: test-report
+          path: gh-pages/
 
   deploy:
-    # Add a dependency to the build job
+    runs-on: ubuntu-latest
     needs: run-and-publish
 
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-
-    # Deploy to the github-pages environment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # Specify runner + deployment step
-    runs-on: ubuntu-latest
     steps:
+      - name: Download Test Report Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: test-report
+          path: gh-pages
+
+      - name: Upload Allure Report as GitHub Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: gh-pages
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
-
-      # - name: Deploy to GitHub Pages
-      #   if: always()
-      #   id: deployment
-      #   uses: actions/deploy-pages@v4
-
-      # - name: Deploy Allure Report to GitHub Pages
-      #   if: always()
-      #   run: |
-      #     cd gh-pages
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      #     git add .
-      #     if git diff --cached --quiet; then
-      #       echo "No changes to commit."
-      #     else
-      #       git commit -m "Add Playwright Allure Report ${{ env.TEST_SCOPE }} - run #${{ github.run_number }}"
-      #       git push origin gh-pages
-      #     fi
-
-      # - name: Comment status & report link
-      #   if: always()
-      #   uses: Sibz/github-status-action@v1
-      #   with:
-      #     authToken: ${{ secrets.GITHUB_TOKEN }}
-      #     owner: FlySpotOrg
-      #     repository: playwrightDemoProject
-      #     sha: ${{ github.event.pull_request.head.sha || github.sha }}
-      #     state: success
-      #     context: "Playwright / ${{ env.TEST_SCOPE }} tests"
-      #     description: "See Allure report →"
-      #     target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/run-${{ github.run_number }}
