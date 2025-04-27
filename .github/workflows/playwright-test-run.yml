@@ -73,12 +73,13 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:${{ env.TEST_SCOPE }}
 
-      - name: Checkout existing gh-pages branch
+      - name: Checkout gh-pages branch
         if: always()
         uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
+          fetch-depth: 0
           persist-credentials: true
         continue-on-error: true
       
@@ -87,34 +88,39 @@ jobs:
         run: |
           echo "Preparing Allure Report..."
           
+          # Create directory structure for the current run
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
           
-          mkdir -p "allure-results/history"
-          for file in history.json trend.json categories-trend.json suites.json retries.json; do
-            echo "Trying to download $file for history..."
-            curl --silent --fail -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_SCOPE }}/history/$file" --output "allure-results/history/$file" || echo "$file not found, skipping."
-          done
+          # Find the latest run number for the current test scope
+          LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
+          
+          if [ -n "$LATEST_RUN" ]; then
+            echo "Copying history from latest run: $LATEST_RUN"
+            cp -r "$LATEST_RUN/history" "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/" || true
+          else
+            echo "No previous runs found for ${{ env.TEST_SCOPE }} scope"
+            mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
+          fi
       
+          # Generate report for the current run
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
-          cp -r "allure-results/history" "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/"
-      
+          
+          # Ensure history directory exists
+          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
+
       - name: Commit and Push Allure Report to gh-pages branch
         if: always()
         run: |
           cd gh-pages
-      
+          
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
           git checkout -B gh-pages
-      
+          
           git add .
           git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || echo "No changes to commit"
           git push origin gh-pages
-
-      - name: Upload Test Report Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-report
-          path: gh-pages/
 
   deploy:
     runs-on: ubuntu-latest
@@ -129,16 +135,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Download Test Report Artifact
-        uses: actions/download-artifact@v4
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
         with:
-          name: test-report
-          path: gh-pages
+          ref: gh-pages
+          fetch-depth: 0
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: gh-pages
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
