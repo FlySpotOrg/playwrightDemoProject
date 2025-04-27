@@ -159,8 +159,8 @@ jobs:
               echo "Found latest run: $latest_run"
               # Remove existing symlink if it exists
               rm -rf "gh-pages/$scope/latest" || true
-              # Create new symlink to latest report
-              ln -s "$(basename $latest_run)" "gh-pages/$scope/latest" || {
+              # Create new symlink to latest report using absolute path
+              ln -s "$(pwd)/$latest_run" "gh-pages/$scope/latest" || {
                 echo "Failed to create symlink"
                 echo "Target directory contents:"
                 ls -la "gh-pages/$scope" || true
