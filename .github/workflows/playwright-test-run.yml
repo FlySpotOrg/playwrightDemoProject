@@ -86,7 +86,13 @@ jobs:
       - name: Prepare Allure Report
         if: always()
         run: |
+          set -e  # Exit on error
           echo "Preparing Allure Report..."
+          
+          # Debug: Show current directory and contents
+          echo "Current directory: $(pwd)"
+          echo "Contents of gh-pages:"
+          ls -la gh-pages || true
           
           # Create directory structure for the current run
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
@@ -96,32 +102,52 @@ jobs:
           
           # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
+          echo "Latest run found: $LATEST_RUN"
           
           if [ -n "$LATEST_RUN" ]; then
             echo "Copying history from latest run: $LATEST_RUN"
             if [ -d "$LATEST_RUN/history" ]; then
-              cp -r "$LATEST_RUN/history/"* "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history/" || true
+              echo "Contents of latest run history:"
+              ls -la "$LATEST_RUN/history" || true
+              cp -r "$LATEST_RUN/history/"* "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history/" || {
+                echo "Failed to copy history files"
+                exit 1
+              }
+            else
+              echo "Warning: No history directory found in latest run"
             fi
           else
             echo "No previous runs found for ${{ env.TEST_SCOPE }} scope"
           fi
       
           # Generate report for the current run
-          npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          echo "Generating Allure report..."
+          npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || {
+            echo "Failed to generate Allure report"
+            exit 1
+          }
 
       - name: Update latest report symlinks
         if: always()
         run: |
+          set -e  # Exit on error
           # Function to update latest report symlink
           update_latest() {
             local scope=$1
+            echo "Updating latest symlink for $scope"
             local latest_run=$(ls -d gh-pages/$scope/*/ 2>/dev/null | sort -V | tail -n 1)
             
             if [ -n "$latest_run" ]; then
+              echo "Found latest run: $latest_run"
               # Remove existing symlink if it exists
               rm -rf "gh-pages/$scope/latest" || true
               # Create new symlink to latest report
-              ln -s "$(basename $latest_run)" "gh-pages/$scope/latest"
+              ln -s "$(basename $latest_run)" "gh-pages/$scope/latest" || {
+                echo "Failed to create symlink"
+                exit 1
+              }
+            else
+              echo "No runs found for $scope"
             fi
           }
 
@@ -132,6 +158,7 @@ jobs:
       - name: Commit and Push Allure Report to gh-pages branch
         if: always()
         run: |
+          set -e  # Exit on error
           cd gh-pages
           
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -139,9 +166,20 @@ jobs:
           
           git checkout -B gh-pages
           
+          echo "Current git status:"
+          git status
+          
           git add .
-          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || echo "No changes to commit"
-          git push origin gh-pages
+          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || {
+            echo "No changes to commit"
+            exit 0
+          }
+          
+          echo "Pushing changes to gh-pages branch..."
+          git push origin gh-pages || {
+            echo "Failed to push changes"
+            exit 1
+          }
 
   deploy:
     runs-on: ubuntu-latest
