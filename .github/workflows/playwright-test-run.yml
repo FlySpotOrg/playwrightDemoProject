@@ -75,39 +75,44 @@ jobs:
         id: set-run-folder
         run: echo "run_folder=run-${{ github.run_number }}" >> $GITHUB_OUTPUT
 
-      - name: Checkout gh-pages branch for history
-        if: always()
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-        continue-on-error: true
+      # - name: Checkout gh-pages branch for history
+      #   if: always()
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: gh-pages
+      #     path: gh-pages
+      #   continue-on-error: true
+
+      # - name: Build Allure Report with History
+      #   uses: simple-elf/allure-report-action@v1.12
+      #   if: always()
+      #   with:
+      #     allure_results: allure-results
+      #     allure_history: allure-history
+      #     gh_pages: gh-pages
 
       - name: Build Allure Report with History
-        uses: simple-elf/allure-report-action@v1.12
-        if: always()
-        with:
-          allure_results: allure-results
-          allure_history: allure-history
-          gh_pages: gh-pages
-
-      - name: Commit updated Allure history back to gh-pages
         if: always()
         run: |
-          cd gh-pages
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B gh-pages
-          git add allure-history || true
-          git commit -m "Update Allure history after test run" || echo "No changes to commit"
-          git push origin gh-pages || echo "No changes to push"
+          npm run allure:generate
+
+      # - name: Commit updated Allure history back to gh-pages
+      #   if: always()
+      #   run: |
+      #     cd gh-pages
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     git checkout -B gh-pages
+      #     git add allure-history || true
+      #     git commit -m "Update Allure history after test run" || echo "No changes to commit"
+      #     git push origin gh-pages || echo "No changes to push"
 
       - name: Upload Test Report Artifact for deployment
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: gh-pages/
+          path: allure-report
 
   deploy:
     runs-on: ubuntu-latest
