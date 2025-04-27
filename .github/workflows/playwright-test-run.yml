@@ -108,34 +108,25 @@ jobs:
           # Ensure history directory exists
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
 
-      - name: Create index files for test scopes
+      - name: Update latest report symlinks
         if: always()
         run: |
-          # Function to create index.html for a test scope
-          create_index() {
+          # Function to update latest report symlink
+          update_latest() {
             local scope=$1
             local latest_run=$(ls -d gh-pages/$scope/*/ 2>/dev/null | sort -V | tail -n 1)
             
             if [ -n "$latest_run" ]; then
-              cat > "gh-pages/$scope/index.html" << EOF
-<!DOCTYPE html>
-<html>
-<head>
-    <title>$scope Test Reports</title>
-    <meta http-equiv="refresh" content="0; url=./$(basename $latest_run)/index.html">
-</head>
-<body>
-    <p>Redirecting to the latest $scope test report...</p>
-    <p>If you are not redirected automatically, <a href="./$(basename $latest_run)/index.html">click here</a>.</p>
-</body>
-</html>
-EOF
+              # Remove existing symlink if it exists
+              rm -rf "gh-pages/$scope/latest" || true
+              # Create new symlink to latest report
+              ln -s "$(basename $latest_run)" "gh-pages/$scope/latest"
             fi
           }
 
-          # Create index files for both scopes
-          create_index "regression"
-          create_index "smoke"
+          # Update symlinks for both scopes
+          update_latest "regression"
+          update_latest "smoke"
 
       - name: Commit and Push Allure Report to gh-pages branch
         if: always()
