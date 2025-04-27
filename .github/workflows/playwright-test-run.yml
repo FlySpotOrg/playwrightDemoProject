@@ -89,8 +89,14 @@ jobs:
           set -e  # Exit on error
           echo "Preparing Allure Report..."
           
+          # Debug: Show current directory and contents
+          echo "Current directory: $(pwd)"
+          echo "Contents of current directory:"
+          ls -la
+          
           # Create directory structure for the current run
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
           
           # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
@@ -98,6 +104,7 @@ jobs:
           
           # Create allure-results directory for the current run
           mkdir -p "allure-results"
+          echo "Created allure-results directory"
           
           if [ -n "$LATEST_RUN" ]; then
             echo "Copying history from latest run: $LATEST_RUN"
@@ -105,10 +112,16 @@ jobs:
               echo "Contents of latest run history:"
               ls -la "$LATEST_RUN/history" || true
               # Copy history to allure-results directory before generating the report
-              cp -r "$LATEST_RUN/history" "allure-results/" || {
+              echo "Copying history files..."
+              cp -rv "$LATEST_RUN/history" "allure-results/" || {
                 echo "Failed to copy history files"
+                echo "Source directory contents:"
+                ls -la "$LATEST_RUN/history" || true
+                echo "Target directory contents:"
+                ls -la "allure-results" || true
                 exit 1
               }
+              echo "History files copied successfully"
             else
               echo "Warning: No history directory found in latest run"
             fi
@@ -116,12 +129,21 @@ jobs:
             echo "No previous runs found for ${{ env.TEST_SCOPE }} scope"
           fi
       
+          # Debug: Show allure-results contents before report generation
+          echo "Contents of allure-results before report generation:"
+          ls -la "allure-results" || true
+      
           # Generate report for the current run
           echo "Generating Allure report..."
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || {
             echo "Failed to generate Allure report"
+            echo "Contents of allure-results after failure:"
+            ls -la "allure-results" || true
+            echo "Contents of target directory after failure:"
+            ls -la "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || true
             exit 1
           }
+          echo "Allure report generated successfully"
 
       - name: Update latest report symlinks
         if: always()
@@ -140,8 +162,11 @@ jobs:
               # Create new symlink to latest report
               ln -s "$(basename $latest_run)" "gh-pages/$scope/latest" || {
                 echo "Failed to create symlink"
+                echo "Target directory contents:"
+                ls -la "gh-pages/$scope" || true
                 exit 1
               }
+              echo "Symlink created successfully"
             else
               echo "No runs found for $scope"
             fi
@@ -165,6 +190,9 @@ jobs:
           echo "Current git status:"
           git status
           
+          echo "Changes to be committed:"
+          git diff --name-status
+          
           git add .
           git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || {
             echo "No changes to commit"
@@ -174,8 +202,13 @@ jobs:
           echo "Pushing changes to gh-pages branch..."
           git push origin gh-pages || {
             echo "Failed to push changes"
+            echo "Git status after push failure:"
+            git status
+            echo "Git remote -v:"
+            git remote -v
             exit 1
           }
+          echo "Changes pushed successfully"
 
   deploy:
     runs-on: ubuntu-latest
