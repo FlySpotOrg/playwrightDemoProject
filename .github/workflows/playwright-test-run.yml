@@ -89,27 +89,23 @@ jobs:
           set -e  # Exit on error
           echo "Preparing Allure Report..."
           
-          # Debug: Show current directory and contents
-          echo "Current directory: $(pwd)"
-          echo "Contents of gh-pages:"
-          ls -la gh-pages || true
-          
           # Create directory structure for the current run
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
-          
-          # Create history directory for the current run
-          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
           
           # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
+          
+          # Create allure-results directory for the current run
+          mkdir -p "allure-results"
           
           if [ -n "$LATEST_RUN" ]; then
             echo "Copying history from latest run: $LATEST_RUN"
             if [ -d "$LATEST_RUN/history" ]; then
               echo "Contents of latest run history:"
               ls -la "$LATEST_RUN/history" || true
-              cp -r "$LATEST_RUN/history/"* "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history/" || {
+              # Copy history to allure-results directory before generating the report
+              cp -r "$LATEST_RUN/history" "allure-results/" || {
                 echo "Failed to copy history files"
                 exit 1
               }
