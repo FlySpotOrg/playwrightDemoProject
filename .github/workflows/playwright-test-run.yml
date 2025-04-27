@@ -81,8 +81,8 @@ jobs:
           curl --silent --fail -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_SCOPE }}/history/history.json" --output history.json || echo "No previous history found."
           
           if [ -f history.json ]; then
-            mkdir -p allure-results/history
-            mv history.json allure-results/history/history.json
+            mkdir -p allure-report/history
+            mv history.json allure-report/history/history.json
           fi
 
           # Now generate report
