@@ -91,22 +91,23 @@ jobs:
           # Create directory structure for the current run
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
           
-          # Find the latest run number for the current test scope
+          # Create history directory for the current run
+          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
+          
+          # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           
           if [ -n "$LATEST_RUN" ]; then
             echo "Copying history from latest run: $LATEST_RUN"
-            cp -r "$LATEST_RUN/history" "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/" || true
+            if [ -d "$LATEST_RUN/history" ]; then
+              cp -r "$LATEST_RUN/history/"* "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history/" || true
+            fi
           else
             echo "No previous runs found for ${{ env.TEST_SCOPE }} scope"
-            mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
           fi
       
           # Generate report for the current run
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
-          
-          # Ensure history directory exists
-          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/history"
 
       - name: Update latest report symlinks
         if: always()
