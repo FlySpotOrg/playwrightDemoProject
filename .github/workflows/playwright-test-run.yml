@@ -71,21 +71,28 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:${{ env.TEST_SCOPE }}
 
-      - name: Build Allure Report
+      - name: Checkout existing gh-pages branch
+        if: always()
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          persist-credentials: true
+        continue-on-error: true
+      
+      - name: Prepare Allure Report
         if: always()
         run: |
-          mkdir -p gh-pages/${{ env.TEST_SCOPE }}
+          echo "Preparing Allure Report..."
           
-          # Try download previous history from GitHub Pages
-          echo "Downloading previous history if available..."
-          curl --silent --fail -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_SCOPE }}/history/history.json" --output history.json || echo "No previous history found."
-          
-          if [ -f history.json ]; then
-            mkdir -p allure-report/history
-            mv history.json allure-report/history/history.json
-          fi
-
-          # Now generate report
+          # Optional: Download previous history only for the current test_scope
+          mkdir -p allure-results/history
+          for file in history.json trend.json categories-trend.json suites.json retries.json; do
+            echo "Trying to download $file for history..."
+            curl --silent --fail -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_SCOPE }}/history/$file" --output "allure-results/history/$file" || echo "$file not found, skipping."
+          done
+      
+          # Generate report
           npm run allure:generate -- --output gh-pages/${{ env.TEST_SCOPE }}
 
       - name: Upload Test Report Artifact
