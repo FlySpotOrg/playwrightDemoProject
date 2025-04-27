@@ -63,6 +63,7 @@ jobs:
       - name: Install dependencies & Playwright
         run: |
           npm ci
+          npx playwright install
 
       - name: Run Playwright tests (${{ env.TEST_SCOPE }})
         env:
