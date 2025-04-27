@@ -33,8 +33,7 @@
     "allure-playwright": "^3.2.1",
     "dotenv": "^16.5.0",
     "gherkin-parse": "^1.0.6",
-    "yargs": "^17.3.0",
-    "playwright": "^1.52.0"
+    "yargs": "^17.3.0"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -42,6 +41,7 @@
     "chai": "^5.2.0",
     "lodash": "^4.17.21",
     "superagent": "^10.2.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "playwright": "^1.52.0"
   }
 }
