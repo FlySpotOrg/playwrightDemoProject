@@ -42,10 +42,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
+      run_number: ${{ env.RUN_NUMBER }}
 
     env:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
+      RUN_NUMBER: ${{ github.run_number }}
 
     steps:
       - name: Checkout code
@@ -85,15 +87,21 @@ jobs:
         run: |
           echo "Preparing Allure Report..."
           
-          # Optional: Download previous history only for the current test_scope
-          mkdir -p allure-results/history
+          # Create directory structure for the current run
+          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          
+          # Download previous history for the current test_scope
+          mkdir -p "allure-results/history"
           for file in history.json trend.json categories-trend.json suites.json retries.json; do
             echo "Trying to download $file for history..."
             curl --silent --fail -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_SCOPE }}/history/$file" --output "allure-results/history/$file" || echo "$file not found, skipping."
           done
       
-          # Generate report
-          npm run allure:generate -- --output gh-pages/${{ env.TEST_SCOPE }}
+          # Generate report for the current run
+          npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          
+          # Copy history to the new report directory
+          cp -r "allure-results/history" "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}/"
 
       - name: Upload Test Report Artifact
         if: always()
