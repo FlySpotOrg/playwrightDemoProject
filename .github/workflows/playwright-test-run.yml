@@ -97,6 +97,7 @@ jobs:
           cd gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B gh-pages  # force create and track gh-pages branch properly
           git add allure-history || true
           git commit -m "Update Allure history after test run" || echo "No changes to commit"
           git push origin gh-pages
