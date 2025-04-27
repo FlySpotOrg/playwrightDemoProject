@@ -33,15 +33,15 @@ on:
           - regression
 
 permissions:
-  contents: write      # ✅ Important for pushing to gh-pages
-  pages: write         # ✅ For Pages deployment
-  id-token: write      # ✅ Required by deploy-pages
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   run-and-publish:
     runs-on: ubuntu-latest
     outputs:
-      run_folder: ${{ steps.set-run-folder.outputs.run_folder }}
+      test_scope: ${{ env.TEST_SCOPE }}
 
     env:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
@@ -71,48 +71,23 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run test:${{ env.TEST_SCOPE }}
 
-      - name: Set run folder name
-        id: set-run-folder
-        run: echo "run_folder=run-${{ github.run_number }}" >> $GITHUB_OUTPUT
-
-      # - name: Checkout gh-pages branch for history
-      #   if: always()
-      #   uses: actions/checkout@v4
-      #   with:
-      #     ref: gh-pages
-      #     path: gh-pages
-      #   continue-on-error: true
-
-      # - name: Build Allure Report with History
-      #   uses: simple-elf/allure-report-action@v1.12
-      #   if: always()
-      #   with:
-      #     allure_results: allure-results
-      #     allure_history: allure-history
-      #     gh_pages: gh-pages
-
-      - name: Build Allure Report with History
+      - name: Build Allure Report
         if: always()
         run: |
           npm run allure:generate
 
-      # - name: Commit updated Allure history back to gh-pages
-      #   if: always()
-      #   run: |
-      #     cd gh-pages
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git checkout -B gh-pages
-      #     git add allure-history || true
-      #     git commit -m "Update Allure history after test run" || echo "No changes to commit"
-      #     git push origin gh-pages || echo "No changes to push"
+      - name: Prepare report for deployment
+        if: always()
+        run: |
+          mkdir -p gh-pages/${{ env.TEST_SCOPE }}
+          cp -r allure-report/* gh-pages/${{ env.TEST_SCOPE }}/
 
       - name: Upload Test Report Artifact for deployment
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: allure-report
+          path: gh-pages/
 
   deploy:
     runs-on: ubuntu-latest
