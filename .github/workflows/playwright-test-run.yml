@@ -33,9 +33,9 @@ on:
           - regression
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write      # ✅ Important for pushing to gh-pages
+  pages: write         # ✅ For Pages deployment
+  id-token: write      # ✅ Required by deploy-pages
 
 jobs:
   run-and-publish:
@@ -77,7 +77,7 @@ jobs:
 
       - name: Checkout gh-pages branch for history
         if: always()
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
@@ -90,19 +90,19 @@ jobs:
           allure_results: allure-results
           allure_history: allure-history
           gh_pages: gh-pages
-      
-      - name: Commit Allure History back to gh-pages
+
+      - name: Commit updated Allure history back to gh-pages
         if: always()
         run: |
           cd gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B gh-pages  # force create and track gh-pages branch properly
+          git checkout -B gh-pages
           git add allure-history || true
           git commit -m "Update Allure history after test run" || echo "No changes to commit"
-          git push origin gh-pages
+          git push origin gh-pages || echo "No changes to push"
 
-      - name: Upload Test Report Artifact
+      - name: Upload Test Report Artifact for deployment
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -124,7 +124,7 @@ jobs:
           name: test-report
           path: gh-pages
 
-      - name: Upload Allure Report as GitHub Pages Artifact
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: gh-pages
