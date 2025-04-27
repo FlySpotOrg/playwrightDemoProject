@@ -90,6 +90,16 @@ jobs:
           allure_results: allure-results
           allure_history: allure-history
           gh_pages: gh-pages
+      
+      - name: Commit Allure History back to gh-pages
+        if: always()
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add allure-history || true
+          git commit -m "Update Allure history after test run" || echo "No changes to commit"
+          git push origin gh-pages
 
       - name: Upload Test Report Artifact
         if: always()
