@@ -202,8 +202,13 @@ jobs:
       - name: Build site folder
         run: |
           mkdir site
-          cp -a regression site/
-          cp -a smoke      site/
+          for scope in regression smoke; do
+            if [ -d "$scope" ]; then
+              cp -a "$scope" site/
+            else
+              echo "› no $scope folder yet, skipping"
+            fi
+          done
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
