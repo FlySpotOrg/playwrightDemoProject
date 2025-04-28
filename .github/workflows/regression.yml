@@ -14,3 +14,4 @@ jobs:
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       WORKFLOW_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO_A_PAT: ${{ secrets.REPO_A_PAT }}
