@@ -219,11 +219,12 @@ jobs:
           echo "Changes pushed successfully"
 
   deploy:
+    name: Deploy Allure Report to GitHub Pages
     runs-on: ubuntu-latest
     needs: run-and-publish
 
     concurrency:
-      group: "github-pages-deployment"
+      group: github-pages-deployment
       cancel-in-progress: false
 
     environment:
@@ -237,10 +238,22 @@ jobs:
           ref: gh-pages
           fetch-depth: 0
 
+      - name: Prepare published site (exclude .git)
+        run: |
+          # Create a clean directory
+          mkdir published
+
+          # Copy all top-level content except .git into `published/`
+          # This brings in: regression/, smoke/, latest symlinks, etc.
+          rsync -av --delete --exclude='.git' . published
+
+          echo "::debug::Contents of published/:"
+          ls -R published
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: published
 
       - name: Deploy to GitHub Pages
         id: deployment
