@@ -280,7 +280,10 @@ jobs:
 
     environment:
       name: github-pages
-      url: https://flyspotorg.github.io/playwrightDemoProject/
+      # url: https://flyspotorg.github.io/playwrightDemoProject/
+
+    outputs:
+      report_url: ${{ steps.set_output.outputs.report_url }} # ✅ Output still correct
 
     steps:
       - name: Checkout gh-pages branch
@@ -314,7 +317,8 @@ jobs:
 
       - name: Post deployment link
         run: |
-          echo "✅ Report: https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/"
+          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/"
+          echo "✅ Report: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
@@ -323,5 +327,6 @@ jobs:
 
       - name: Create deployment summary
         run: |
+          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
-          echo "- [View Report](https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
