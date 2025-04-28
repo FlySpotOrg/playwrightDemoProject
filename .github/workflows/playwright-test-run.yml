@@ -238,21 +238,24 @@ jobs:
           ref: gh-pages
           fetch-depth: 0
 
-      - name: Prepare published site (exclude .git and the published folder)
+      - name: Prepare site folder
         run: |
-         mkdir published
-         rsync -av --delete \
-          --exclude='.git' \
-          --exclude='published' \
-          . published
+          mkdir site
+          # Copy only your two scopes into a clean folder
+          cp -R regression site/
+          cp -R smoke      site/
 
-          echo "::debug::Contents of published/:"  
-          ls -R published
+          # Copy the "latest" symlinks too
+          cp regression/latest site/regression/latest
+          cp smoke/latest      site/smoke/latest
+
+          echo "::debug::site contents:"
+          ls -R site
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: published
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
