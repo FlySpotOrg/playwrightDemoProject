@@ -164,22 +164,23 @@ jobs:
               echo "Found latest run directory: $latest_run_dir for scope $scope"
               # Target path for the symlink within the current directory (gh-pages)
               local symlink_path="$scope/latest"
-              # Target directory the symlink should point to (relative path)
-              local target_dir="$latest_run_dir" 
+              # Target directory the symlink should point to (path relative to site root)
+              # Ensure it starts with / and ends with / for clarity
+              local target_path="/$scope/$latest_run_dir/"
 
               # Remove existing symlink if it exists within the scope directory
               rm -f "$symlink_path" || true
               echo "Removed existing symlink (if any): $symlink_path"
 
-              # Create new relative symlink within the scope directory
-              # The link name is 'latest', pointing to the latest run directory name
-              ln -s "$target_dir" "$symlink_path" || {
-                echo "Failed to create symlink from $symlink_path to $target_dir"
+              # Create new symlink pointing to the root-relative path
+              # The link name is 'latest', pointing to the latest run directory path from root
+              ln -s "$target_path" "$symlink_path" || {
+                echo "Failed to create symlink from $symlink_path to $target_path"
                 echo "Target directory contents ($scope):"
                 ls -la "$scope" || true
                 exit 1
               }
-              echo "Symlink created successfully: $symlink_path -> $target_dir"
+              echo "Symlink created successfully: $symlink_path -> $target_path"
             else
               echo "No runs found for $scope to create symlink"
             fi
