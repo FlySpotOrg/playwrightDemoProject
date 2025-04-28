@@ -156,7 +156,10 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git remote set-url origin https://x-access-token:${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
+          # Alternative format for git remote URL
+          git remote set-url origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
+          # Verify the remote URL
+          git remote -v
 
       - name: Commit and Push Allure Report to gh-pages branch
         if: always()
