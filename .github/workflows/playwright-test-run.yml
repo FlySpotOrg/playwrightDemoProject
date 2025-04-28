@@ -20,6 +20,8 @@ on:
         required: true
       WORKFLOW_TOKEN:
         required: true
+      REPO_A_PAT:
+        required: true
 
   workflow_dispatch:
     inputs:
@@ -149,10 +151,16 @@ jobs:
           }
           echo "Allure report generated successfully"
 
+      - name: Set up git credentials for cross-repo push
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git remote set-url origin https://x-access-token:${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
+
       - name: Commit and Push Allure Report to gh-pages branch
         if: always()
         run: |
-          set -e  # Exit on error
+          set -e
           cd gh-pages
 
           # Function to update latest report content
@@ -197,9 +205,6 @@ jobs:
           update_latest "regression"
           update_latest "smoke"
 
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
           git checkout -B gh-pages
           
           echo "Current git status:"
@@ -218,9 +223,7 @@ jobs:
           git pull origin gh-pages
           git push origin gh-pages || {
             echo "Failed to push changes"
-            echo "Git status after push failure:"
             git status
-            echo "Git remote -v:"
             git remote -v
             exit 1
           }
