@@ -53,6 +53,7 @@ jobs:
     env:
       # TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       # CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
+      UNIQUE_RUN_ID: ${{ github.run_id }}
       TEST_SCOPE: ${{ github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       RUN_NUMBER: ${{ github.run_number }}
@@ -108,8 +109,10 @@ jobs:
           ls -la
 
           # Create directory structure for the current run
-          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
-          echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          # mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
+          # echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
+          echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
 
           # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
@@ -327,16 +330,16 @@ jobs:
 
       - name: Post deployment link
         run: |
-          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.run_number }}/"
+          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.UNIQUE_RUN_ID }}/"
           echo "✅ Report: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
         run: |
-          echo "report_url=https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.run_number }}/" >> $GITHUB_OUTPUT
+          echo "report_url=https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
-          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.run_number }}/"
+          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.UNIQUE_RUN_ID }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
