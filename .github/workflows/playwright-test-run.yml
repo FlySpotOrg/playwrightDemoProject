@@ -243,8 +243,6 @@ jobs:
           mkdir site
           cp -a regression site/
           cp -a smoke      site/
-          echo "::debug::site contents:"
-          ls -R site
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
