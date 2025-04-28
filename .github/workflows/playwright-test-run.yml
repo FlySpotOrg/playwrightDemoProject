@@ -238,18 +238,13 @@ jobs:
           ref: gh-pages
           fetch-depth: 0
 
-      - name: Prepare site folder
-        run: |
-          mkdir site
-          cp -a regression site/
-          cp -a smoke      site/
-          echo "::debug::site contents:"
-          ls -R site
-
-      - name: Upload Pages Artifact
+      - name: Upload only regression & smoke folders
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          # Multi-line paths: each one will be packaged into the Pages artifact
+          path: |
+            regression
+            smoke
 
       - name: Deploy to GitHub Pages
         id: deployment
