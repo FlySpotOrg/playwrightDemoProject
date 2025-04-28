@@ -49,11 +49,13 @@ jobs:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
       RUN_NUMBER: ${{ github.run_number }}
+      CURRENT_REPO: ${{ github.repository }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          repository: ${{ env.CURRENT_REPO }}
           fetch-depth: 0
           persist-credentials: true
           ref: ${{ env.CHECKOUT_REF }}
@@ -78,6 +80,7 @@ jobs:
         if: always()
         uses: actions/checkout@v4
         with:
+          repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           path: gh-pages
           fetch-depth: 0
@@ -240,6 +243,7 @@ jobs:
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
         with:
+          repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           fetch-depth: 0
 

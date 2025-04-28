@@ -1,9 +1,6 @@
 name: Regression Test Run
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
