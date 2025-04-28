@@ -39,6 +39,7 @@ permissions:
 
 jobs:
   run-and-publish:
+    name: Run Playwright Tests
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
@@ -150,6 +151,34 @@ jobs:
         run: |
           set -e  # Exit on error
           cd gh-pages
+
+          update_latest() {
+            local scope=$1
+            echo "Updating latest symlink for $scope"
+            local latest_run_dir=$(find "$scope" -maxdepth 1 -mindepth 1 -type d -printf '%f\\n' | sort -V | tail -n 1)
+
+            if [ -n "$latest_run_dir" ]; then
+              echo "Found latest run directory: $latest_run_dir for scope $scope"
+              local symlink_path="$scope/latest"
+              local target_path="/$scope/$latest_run_dir/"
+
+              rm -f "$symlink_path" || true
+              echo "Removed existing symlink (if any): $symlink_path"
+
+              ln -s "$target_path" "$symlink_path" || {
+                echo "Failed to create symlink from $symlink_path to $target_path"
+                echo "Target directory contents ($scope):"
+                ls -la "$scope" || true
+                exit 1
+              }
+              echo "Symlink created successfully: $symlink_path -> $target_path"
+            else
+              echo "No runs found for $scope to create symlink"
+            fi
+          }
+
+          update_latest "regression"
+          update_latest "smoke"
 
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
