@@ -263,15 +263,3 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Comment status & report link
-        if: always()
-        uses: guibranco/github-status-action-v2@latest
-        with:
-          authToken: ${{ secrets.GITHUB_TOKEN }}
-          owner: FlySpotOrg
-          repository: playwrightDemoProject
-          sha: ${{ github.event.pull_request.head.sha || github.sha }}
-          state: success
-          context: "Playwright / ${{ env.TEST_SCOPE }} tests"
-          description: "See Allure report →"
-          target_url: https://${{ github.repository_owner }}.github.io/playwrightDemoProject/${{ github.run_number }}
