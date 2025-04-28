@@ -212,6 +212,7 @@ jobs:
           }
           
           echo "Pushing changes to gh-pages branch..."
+          git pull origin gh-pages
           git push origin gh-pages || {
             echo "Failed to push changes"
             echo "Git status after push failure:"
