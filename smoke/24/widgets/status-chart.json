@@ -1,0 +1,1 @@
+[{"uid":"a9f57ff5d473241b","name":"User should get all rooms","time":{"start":1745855512795,"stop":1745855517524,"duration":4729},"status":"passed","severity":"normal"},{"uid":"449369b9a7a282d8","name":"User should be able to book a room","time":{"start":1745855518347,"stop":1745855521548,"duration":3201},"status":"passed","severity":"normal"}]
