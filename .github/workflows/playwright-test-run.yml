@@ -48,7 +48,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
-      run_number: ${{ env.RUN_NUMBER }}
+      run_number: ${{ env.UNIQUE_RUN_ID }}
+      # run_number: ${{ env.RUN_NUMBER }}
 
     env:
       # TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
@@ -263,7 +264,8 @@ jobs:
           git diff --name-status
 
           git add .
-          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || {
+          # git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || {
+          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.UNIQUE_RUN_ID }}" || {
             echo "No changes to commit"
             exit 0
           }
