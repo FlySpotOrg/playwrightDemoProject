@@ -152,31 +152,41 @@ jobs:
           set -e  # Exit on error
           cd gh-pages
 
+          # Function to update latest report content
           update_latest() {
             local scope=$1
-            echo "Updating latest symlink for $scope"
+            echo "Updating latest report content for $scope"
             local latest_run_dir=$(find "$scope" -maxdepth 1 -mindepth 1 -type d -printf '%f\\n' | sort -V | tail -n 1)
 
             if [ -n "$latest_run_dir" ]; then
               echo "Found latest run directory: $latest_run_dir for scope $scope"
-              local symlink_path="$scope/latest"
-              local target_path="/$scope/$latest_run_dir/"
+              local source_dir="$scope/$latest_run_dir"
+              local target_dir="$scope/latest"
+              
+              # Remove existing latest directory if it exists
+              rm -rf "$target_dir" || true
+              echo "Removed existing latest directory (if any): $target_dir"
 
-              rm -f "$symlink_path" || true
-              echo "Removed existing symlink (if any): $symlink_path"
+              # Create the latest directory
+              mkdir -p "$target_dir"
+              echo "Created latest directory: $target_dir"
 
-              ln -s "$target_path" "$symlink_path" || {
-                echo "Failed to create symlink from $symlink_path to $target_path"
-                echo "Target directory contents ($scope):"
-                ls -la "$scope" || true
+              # Copy all content from latest run to the latest directory
+              cp -a "$source_dir/"* "$target_dir/" || {
+                echo "Failed to copy content from $source_dir to $target_dir"
+                echo "Source directory contents:"
+                ls -la "$source_dir" || true
+                echo "Target directory contents:"
+                ls -la "$target_dir" || true
                 exit 1
               }
-              echo "Symlink created successfully: $symlink_path -> $target_path"
+              echo "Content copied successfully to $target_dir"
             else
-              echo "No runs found for $scope to create symlink"
+              echo "No runs found for $scope to update content"
             fi
           }
 
+          # Update content for both scopes
           update_latest "regression"
           update_latest "smoke"
 
