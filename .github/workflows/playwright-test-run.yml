@@ -49,7 +49,7 @@ jobs:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
       RUN_NUMBER: ${{ github.run_number }}
-      CURRENT_REPO: ${{ github.repository }}
+      CURRENT_REPO: FlySpotOrg/playwrightDemoProject
 
     steps:
       - name: Checkout code
