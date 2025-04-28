@@ -86,6 +86,7 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           path: gh-pages
+          token: ${{ secrets.REPO_A_PAT }}
           fetch-depth: 0
           persist-credentials: true
         continue-on-error: true
@@ -154,12 +155,30 @@ jobs:
 
       - name: Set up git credentials for cross-repo push
         run: |
+          # Debug: Show current directory and git config
+          echo "Current directory: $(pwd)"
+          echo "Git config:"
+          git config --list
+          
+          # Set up git credentials
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          # Alternative format for git remote URL
-          git remote set-url origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
-          # Verify the remote URL
+          
+          # Remove existing remote
+          git remote remove origin || true
+          
+          # Add new remote with PAT
+          git remote add origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
+          
+          # Verify remote configuration
+          echo "Remote configuration:"
           git remote -v
+          
+          # Test git access
+          git ls-remote origin gh-pages || {
+            echo "Failed to access remote repository"
+            exit 1
+          }
 
       - name: Commit and Push Allure Report to gh-pages branch
         if: always()
@@ -224,12 +243,25 @@ jobs:
           }
           
           echo "Pushing changes to gh-pages branch..."
-          git pull origin gh-pages
+          # Pull with rebase to avoid merge conflicts
+          git pull --rebase origin gh-pages || {
+            echo "Failed to pull changes"
+            git status
+            exit 1
+          }
+          
+          # Push with force if needed
           git push origin gh-pages || {
             echo "Failed to push changes"
+            echo "Git status:"
             git status
+            echo "Git remote -v:"
             git remote -v
-            exit 1
+            echo "Trying force push..."
+            git push -f origin gh-pages || {
+              echo "Force push also failed"
+              exit 1
+            }
           }
           echo "Changes pushed successfully"
 
