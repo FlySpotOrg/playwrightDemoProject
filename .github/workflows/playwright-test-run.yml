@@ -156,8 +156,11 @@ jobs:
           update_latest() {
             local scope=$1
             echo "Updating latest report content for $scope"
-            local latest_run_dir=$(ls -d "$scope"/*/ 2>/dev/null | sort -V | tail -n 1 | xargs basename)
-            latest_run_dir=${latest_run_dir%?}  # Remove trailing slash
+            
+            # Find the latest run directory and remove any newlines
+            local latest_run_dir=$(ls -d "$scope"/*/ 2>/dev/null | sort -V | tail -n 1)
+            latest_run_dir=$(basename "$latest_run_dir")
+            latest_run_dir=${latest_run_dir%/}  # Remove trailing slash
 
             if [ -n "$latest_run_dir" ]; then
               echo "Found latest run directory: $latest_run_dir for scope $scope"
