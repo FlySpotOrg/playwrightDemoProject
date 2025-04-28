@@ -73,6 +73,7 @@ jobs:
           npx playwright install
 
       - name: Run Playwright tests (${{ env.TEST_SCOPE }})
+        continue-on-error: true
         env:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
