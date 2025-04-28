@@ -302,38 +302,6 @@ jobs:
               echo "› no $scope folder yet, skipping"
             fi
           done
-          
-          # Create index.html if it doesn't exist
-          if [ ! -f "site/index.html" ]; then
-            echo "Creating index.html"
-            cat > site/index.html << EOF
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>Playwright Test Reports</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                h1 { color: #333; }
-                .scope { margin: 20px 0; }
-                .scope h2 { color: #666; }
-                .scope a { color: #0366d6; text-decoration: none; }
-                .scope a:hover { text-decoration: underline; }
-              </style>
-            </head>
-            <body>
-              <h1>Playwright Test Reports</h1>
-              <div class="scope">
-                <h2>Regression Tests</h2>
-                <p><a href="regression/latest/index.html">Latest Regression Report</a></p>
-              </div>
-              <div class="scope">
-                <h2>Smoke Tests</h2>
-                <p><a href="smoke/latest/index.html">Latest Smoke Report</a></p>
-              </div>
-            </body>
-            </html>
-            EOF
-          fi
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
