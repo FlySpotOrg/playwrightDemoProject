@@ -1,0 +1,41 @@
+2025-04-28 07:22:54 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-04-28 07:22:54 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"tlRlCK9XHVPyn60M"}
+  ← headers: {"date":"Mon, 28 Apr 2025 07:22:54 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9374cfa939c9b8b1-IAD","alt-svc":"h3=\":443\"; ma=86400"}
+2025-04-28 07:22:54 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=tlRlCK9XHVPyn60M"}
+2025-04-28 07:22:54 info: [HTTP RESPONSE] GET /room/ → 200
+  ← params: undefined
+  ← data: {"rooms":[{"roomid":1,"roomName":"101","type":"Single","accessible":true,"image":"/images/room1.jpg","description":"Aenean porttitor mauris sit amet lacinia molestie. In posuere accumsan aliquet. Maecenas sit amet nisl massa. Interdum et malesuada fames ac ante.","features":["TV","WiFi","Safe"],"roomPrice":100},{"roomid":2,"roomName":"102","type":"Double","accessible":true,"image":"/images/room2.jpg","description":"Vestibulum sollicitudin, lectus ac mollis consequat, lorem orci ultrices tellus, eleifend euismod tortor dui egestas erat. Phasellus et ipsum nisl. ","features":["TV","Radio","Safe"],"roomPrice":150},{"roomid":3,"roomName":"103","type":"Suite","accessible":true,"image":"/images/room3.jpg","description":"Etiam metus metus, fringilla ac sagittis id, consequat vel neque. Nunc commodo quis nisl nec posuere. Etiam at accumsan ex. ","features":["Radio","WiFi","Safe"],"roomPrice":225}]}
+  ← headers: {"date":"Mon, 28 Apr 2025 07:22:54 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9374cfac79408791-IAD","alt-svc":"h3=\":443\"; ma=86400"}
+2025-04-28 07:22:54 info: [HTTP REQUEST] GET https://automationintesting.online/api/booking/?roomid=1
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=tlRlCK9XHVPyn60M"}
+2025-04-28 07:22:55 info: [HTTP RESPONSE] GET /booking/?roomid=1 → 200
+  ← params: undefined
+  ← data: {"bookings":[{"bookingid":5,"roomid":1,"firstname":"John","lastname":"Doe","depositpaid":false,"bookingdates":{"checkin":"2025-04-28","checkout":"2025-04-29"}},{"bookingid":6,"roomid":1,"firstname":"Дмитрий","lastname":"Торгов","depositpaid":false,"bookingdates":{"checkin":"2025-04-01","checkout":"2025-04-05"}}]}
+  ← headers: {"date":"Mon, 28 Apr 2025 07:22:55 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9374cfaeb8f87fe1-IAD","alt-svc":"h3=\":443\"; ma=86400"}
+2025-04-28 07:22:55 info: [HTTP REQUEST] DELETE https://automationintesting.online/api/booking/5
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=tlRlCK9XHVPyn60M"}
+2025-04-28 07:22:55 info: [HTTP RESPONSE] DELETE /booking/5 → 200
+  ← params: undefined
+  ← data: {"success":true}
+  ← headers: {"date":"Mon, 28 Apr 2025 07:22:55 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9374cfb04a12c99d-IAD","alt-svc":"h3=\":443\"; ma=86400"}
+2025-04-28 07:22:55 info: [HTTP REQUEST] DELETE https://automationintesting.online/api/booking/6
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=tlRlCK9XHVPyn60M"}
+2025-04-28 07:22:55 info: [HTTP RESPONSE] DELETE /booking/6 → 200
+  ← params: undefined
+  ← data: {"success":true}
+  ← headers: {"date":"Mon, 28 Apr 2025 07:22:55 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9374cfb1b804065d-IAD","alt-svc":"h3=\":443\"; ma=86400"}
+2025-04-28 07:22:55 info: User has been logged out.
