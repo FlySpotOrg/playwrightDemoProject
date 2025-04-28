@@ -34,6 +34,9 @@ on:
           - smoke
           - regression
 
+  repository_dispatch:
+    types: [run-tests]
+
 permissions:
   contents: write
   pages: write
@@ -48,8 +51,10 @@ jobs:
       run_number: ${{ env.RUN_NUMBER }}
 
     env:
-      TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
-      CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
+      # TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
+      # CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
+      TEST_SCOPE: ${{ github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
+      CHECKOUT_REF: ${{ github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       RUN_NUMBER: ${{ github.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
 
