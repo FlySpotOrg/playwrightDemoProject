@@ -4,15 +4,15 @@ on:
   workflow_call:
     inputs:
       run_branch:
-        description: 'Branch to run tests on'
+        description: "Branch to run tests on"
         required: true
         type: string
-        default: 'main'
+        default: "main"
       test_scope:
-        description: 'Test scope to run'
+        description: "Test scope to run"
         required: true
         type: string
-        default: 'regression'
+        default: "regression"
     secrets:
       ADMIN_USERNAME:
         required: true
@@ -26,10 +26,10 @@ on:
   workflow_dispatch:
     inputs:
       test_scope:
-        description: 'Select test scope'
+        description: "Select test scope"
         type: choice
         required: false
-        default: 'regression'
+        default: "regression"
         options:
           - smoke
           - regression
@@ -65,7 +65,7 @@ jobs:
       - name: Setup Node.js & Tools
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies & Playwright
         run: |
@@ -90,30 +90,30 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
         continue-on-error: true
-      
+
       - name: Prepare Allure Report
         if: always()
         run: |
           set -e  # Exit on error
           echo "Preparing Allure Report..."
-          
+
           # Debug: Show current directory and contents
           echo "Current directory: $(pwd)"
           echo "Contents of current directory:"
           ls -la
-          
+
           # Create directory structure for the current run
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
           echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
-          
+
           # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
-          
+
           # Create allure-results directory for the current run
           mkdir -p "allure-results"
           echo "Created allure-results directory"
-          
+
           if [ -n "$LATEST_RUN" ]; then
             echo "Copying history from latest run: $LATEST_RUN"
             if [ -d "$LATEST_RUN/history" ]; then
@@ -136,11 +136,11 @@ jobs:
           else
             echo "No previous runs found for ${{ env.TEST_SCOPE }} scope"
           fi
-      
+
           # Debug: Show allure-results contents before report generation
           echo "Contents of allure-results before report generation:"
           ls -la "allure-results" || true
-      
+
           # Generate report for the current run
           echo "Generating Allure report..."
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || {
@@ -159,21 +159,21 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "Git config:"
           git config --list
-          
+
           # Set up git credentials
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          
+
           # Remove existing remote
           git remote remove origin || true
-          
+
           # Add new remote with PAT
           git remote add origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
-          
+
           # Verify remote configuration
           echo "Remote configuration:"
           git remote -v
-          
+
           # Test git access
           git ls-remote origin gh-pages || {
             echo "Failed to access remote repository"
@@ -229,19 +229,19 @@ jobs:
           update_latest "smoke"
 
           git checkout -B gh-pages
-          
+
           echo "Current git status:"
           git status
-          
+
           echo "Changes to be committed:"
           git diff --name-status
-          
+
           git add .
           git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || {
             echo "No changes to commit"
             exit 0
           }
-          
+
           echo "Pushing changes to gh-pages branch..."
           # Pull with rebase to avoid merge conflicts
           git pull --rebase origin gh-pages || {
@@ -249,7 +249,7 @@ jobs:
             git status
             exit 1
           }
-          
+
           # Push with force if needed
           git push origin gh-pages || {
             echo "Failed to push changes"
@@ -312,3 +312,9 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Post deployment links
+        run: |
+          echo "### 🚀 Allure Reports Deployed!" >> $GITHUB_STEP_SUMMARY
+          for scope in $(ls site); do
+            echo "- [${scope^} Report](https://flyspotorg.github.io/playwrightDemoProject/${scope}/${{ github.run_number }}/)" >> $GITHUB_STEP_SUMMARY
+          done
