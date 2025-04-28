@@ -280,7 +280,7 @@ jobs:
 
     environment:
       name: github-pages
-      url: https://${{ github.event.repository.owner.login }}.github.io/${{ github.event.repository.name }}/
+      url: https://flyspotorg.github.io/playwrightDemoProject/
 
     steps:
       - name: Checkout gh-pages branch
@@ -343,6 +343,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.REPO_A_PAT }}
 
