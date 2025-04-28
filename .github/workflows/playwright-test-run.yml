@@ -280,7 +280,7 @@ jobs:
 
     environment:
       name: github-pages
-      url: https://flyspotorg.github.io/playwrightDemoProject/
+      url: https://${{ github.event.repository.owner.login }}.github.io/${{ github.event.repository.name }}/
 
     steps:
       - name: Checkout gh-pages branch
