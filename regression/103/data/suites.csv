@@ -1,5 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","6720","User should be able to book a room","UI Tests","Mon Apr 28 05:14:14 UTC 2025","passed","Mon Apr 28 05:14:20 UTC 2025","Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
-"","2405","User should get a specific room by ID","API Tests","Mon Apr 28 05:14:10 UTC 2025","passed","Mon Apr 28 05:14:13 UTC 2025","Room API Tests","api/hotel-room.api.spec.ts","",""
-"","6646","User should get all rooms","API Tests","Mon Apr 28 05:14:04 UTC 2025","passed","Mon Apr 28 05:14:10 UTC 2025","Room API Tests","api/hotel-room.api.spec.ts","",""
-"","3038","User should be able to submit contact form","UI Tests","Mon Apr 28 05:14:21 UTC 2025","passed","Mon Apr 28 05:14:24 UTC 2025","Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
