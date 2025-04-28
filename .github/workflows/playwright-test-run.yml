@@ -238,16 +238,15 @@ jobs:
           ref: gh-pages
           fetch-depth: 0
 
-      - name: Prepare published site (exclude .git)
+      - name: Prepare published site (exclude .git and the published folder)
         run: |
-          # Create a clean directory
-          mkdir published
+         mkdir published
+         rsync -av --delete \
+          --exclude='.git' \
+          --exclude='published' \
+          . published
 
-          # Copy all top-level content except .git into `published/`
-          # This brings in: regression/, smoke/, latest symlinks, etc.
-          rsync -av --delete --exclude='.git' . published
-
-          echo "::debug::Contents of published/:"
+          echo "::debug::Contents of published/:"  
           ls -R published
 
       - name: Upload Pages Artifact
