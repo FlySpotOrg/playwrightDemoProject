@@ -3,13 +3,16 @@ name: Smoke Test Run
 on:
   workflow_dispatch:
 
+env:
+  TEST_TYPE: smoke
+
 jobs:
   smoke-tests:
     name: Smoke Suite
     uses: ./.github/workflows/playwright-test-run.yml
     with:
       run_branch: ${{ github.event.pull_request.head.ref || github.ref_name }}
-      test_scope: 'smoke'
+      test_scope: "smoke"
     secrets:
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}

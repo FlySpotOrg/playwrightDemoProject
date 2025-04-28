@@ -312,9 +312,16 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Post deployment links
+      - name: Post deployment link
         run: |
-          echo "### 🚀 Allure Reports Deployed!" >> $GITHUB_STEP_SUMMARY
-          for scope in $(ls site); do
-            echo "- [${scope^} Report](https://flyspotorg.github.io/playwrightDemoProject/${scope}/${{ github.run_number }}/)" >> $GITHUB_STEP_SUMMARY
-          done
+          echo "✅ Report: https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/"
+
+      - name: Set output for report URL
+        id: set_output
+        run: |
+          echo "report_url=https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/" >> $GITHUB_OUTPUT
+
+      - name: Create deployment summary
+        run: |
+          echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Report](https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/)" >> $GITHUB_STEP_SUMMARY
