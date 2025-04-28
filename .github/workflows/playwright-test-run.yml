@@ -247,7 +247,7 @@ jobs:
           ls -R site
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v1
         with:
           path: site
 
