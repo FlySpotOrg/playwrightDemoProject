@@ -282,6 +282,9 @@ jobs:
       name: github-pages
       # url: https://flyspotorg.github.io/playwrightDemoProject/
 
+    env:
+      TEST_SCOPE: ${{ inputs.test_scope }}
+
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }} # ✅ Output still correct
 
@@ -317,16 +320,16 @@ jobs:
 
       - name: Post deployment link
         run: |
-          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/"
+          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.run_number }}/"
           echo "✅ Report: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
         run: |
-          echo "report_url=https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/" >> $GITHUB_OUTPUT
+          echo "report_url=https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.run_number }}/" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
-          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_TYPE }}/${{ github.run_number }}/"
+          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ github.run_number }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
