@@ -265,7 +265,7 @@ jobs:
 
       - name: Comment status & report link
         if: always()
-        uses: Sibz/github-status-action@v1
+        uses: Sibz/github-status-action-v2@v1
         with:
           authToken: ${{ secrets.GITHUB_TOKEN }}
           owner: FlySpotOrg
