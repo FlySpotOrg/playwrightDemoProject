@@ -288,7 +288,9 @@ jobs:
       # url: https://flyspotorg.github.io/playwrightDemoProject/
 
     env:
-      TEST_SCOPE: ${{ inputs.test_scope }}
+      TEST_SCOPE: ${{ github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
+      CURRENT_REPO: FlySpotOrg/playwrightDemoProject
+      # TEST_SCOPE: ${{ inputs.test_scope }}
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }} # ✅ Output still correct
