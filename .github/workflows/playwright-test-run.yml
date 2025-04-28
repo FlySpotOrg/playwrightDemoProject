@@ -151,12 +151,14 @@ jobs:
 
           # Generate report for the current run
           echo "Generating Allure report..."
-          npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || {
+          # npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || {
+          npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
             echo "Contents of allure-results after failure:"
             ls -la "allure-results" || true
             echo "Contents of target directory after failure:"
-            ls -la "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || true
+            # ls -la "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || true
+            ls -la "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || true
             exit 1
           }
           echo "Allure report generated successfully"
@@ -200,12 +202,15 @@ jobs:
             echo "Updating latest report content for $scope"
             
             # Find the latest run directory and remove any newlines
-            local latest_run_dir=$(ls -d "$scope"/[0-9]*/ 2>/dev/null | sort -V | tail -n 1)
-            latest_run_dir=$(basename "$latest_run_dir")
-            latest_run_dir=${latest_run_dir%/}  # Remove trailing slash
+            # local latest_run_dir=$(ls -d "$scope"/[0-9]*/ 2>/dev/null | sort -V | tail -n 1)
+            # latest_run_dir=$(basename "$latest_run_dir")
+            # latest_run_dir=${latest_run_dir%/}  # Remove trailing slash
+            
+            # Use UNIQUE_RUN_ID directly for latest_run_dir
+            local latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
 
             if [ -n "$latest_run_dir" ]; then
-              echo "Found latest run directory: $latest_run_dir for scope $scope"
+              echo "Using latest run directory: $latest_run_dir for scope $scope"
               local source_dir="$scope/$latest_run_dir"
               local target_dir="$scope/latest"
               
