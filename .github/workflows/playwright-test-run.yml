@@ -233,8 +233,21 @@ jobs:
           }
 
           # Update content for both scopes
-          update_latest "regression"
-          update_latest "smoke"
+          # update_latest "regression"
+          # update_latest "smoke"
+
+          # Update content if the directory exists
+          if [ -d "regression" ]; then
+            update_latest "regression"
+          else
+            echo "No regression reports found. Skipping regression update."
+          fi
+
+          if [ -d "smoke" ]; then
+            update_latest "smoke"
+          else
+            echo "No smoke reports found. Skipping smoke update."
+          fi
 
           git checkout -B gh-pages
 
