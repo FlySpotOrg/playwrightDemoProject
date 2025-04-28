@@ -241,14 +241,8 @@ jobs:
       - name: Prepare site folder
         run: |
           mkdir site
-          # Copy only your two scopes into a clean folder
-          cp -R regression site/
-          cp -R smoke      site/
-
-          # Copy the "latest" symlinks too
-          cp regression/latest site/regression/latest
-          cp smoke/latest      site/smoke/latest
-
+          cp -a regression site/
+          cp -a smoke      site/
           echo "::debug::site contents:"
           ls -R site
 
