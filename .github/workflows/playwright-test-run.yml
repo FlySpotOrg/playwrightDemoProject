@@ -51,15 +51,11 @@ jobs:
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
-      # run_number: ${{ env.RUN_NUMBER }}
 
     env:
-      # TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
-      # CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
       UNIQUE_RUN_ID: ${{ github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
-      RUN_NUMBER: ${{ github.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
@@ -81,17 +77,17 @@ jobs:
           persist-credentials: true
           ref: ${{ env.CHECKOUT_REF }}
 
-      - name: Setup Node.js & Tools
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: Install dependencies & Playwright
+      - name: Install dependencies and Playwright
         run: |
           npm ci
           npx playwright install
 
-      - name: Run Playwright tests (${{ env.TEST_SCOPE }})
+      - name: Run Playwright Tests (${{ env.TEST_SCOPE }})
         continue-on-error: true
         env:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
@@ -105,150 +101,52 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           path: gh-pages
-          token: ${{ secrets.REPO_A_PAT }}
           fetch-depth: 0
+          token: ${{ secrets.REPO_A_PAT }}
           persist-credentials: true
-        continue-on-error: true
 
       - name: Prepare Allure Report
         if: always()
         run: |
-          set -e  # Exit on error
+          set -e
           echo "Preparing Allure Report..."
 
-          # Debug: Show current directory and contents
-          echo "Current directory: $(pwd)"
-          echo "Contents of current directory:"
-          ls -la
-
-          # Create directory structure for the current run
-          # mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
           mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
-          # echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}"
-          echo "Created directory: gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
 
-          # Find the latest run for the current test scope
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
 
-          # Create allure-results directory for the current run
           mkdir -p "allure-results"
-          echo "Created allure-results directory"
-
           if [ -n "$LATEST_RUN" ]; then
-            echo "Copying history from latest run: $LATEST_RUN"
             if [ -d "$LATEST_RUN/history" ]; then
-              echo "Contents of latest run history:"
-              ls -la "$LATEST_RUN/history" || true
-              # Copy history to allure-results directory before generating the report
-              echo "Copying history files..."
-              cp -rv "$LATEST_RUN/history" "allure-results/" || {
-                echo "Failed to copy history files"
-                echo "Source directory contents:"
-                ls -la "$LATEST_RUN/history" || true
-                echo "Target directory contents:"
-                ls -la "allure-results" || true
-                exit 1
-              }
-              echo "History files copied successfully"
+              echo "Copying history from $LATEST_RUN"
+              cp -rv "$LATEST_RUN/history" "allure-results/"
             else
-              echo "Warning: No history directory found in latest run"
+              echo "No history directory found in $LATEST_RUN"
             fi
-          else
-            echo "No previous runs found for ${{ env.TEST_SCOPE }} scope"
           fi
 
-          # Debug: Show allure-results contents before report generation
           echo "Contents of allure-results before report generation:"
           ls -la "allure-results" || true
 
-          # Generate report for the current run
           echo "Generating Allure report..."
-          # npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || {
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
-            echo "Contents of allure-results after failure:"
-            ls -la "allure-results" || true
-            echo "Contents of target directory after failure:"
-            # ls -la "gh-pages/${{ env.TEST_SCOPE }}/${{ env.RUN_NUMBER }}" || true
-            ls -la "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || true
             exit 1
           }
           echo "Allure report generated successfully"
 
-      - name: Set up git credentials for cross-repo push
+      - name: Set up git credentials
         run: |
-          # Debug: Show current directory and git config
-          echo "Current directory: $(pwd)"
-          echo "Git config:"
-          git config --list
-
-          # Set up git credentials
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          git remote set-url origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
 
-          # Remove existing remote
-          git remote remove origin || true
-
-          # Add new remote with PAT
-          git remote add origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
-
-          # Verify remote configuration
-          echo "Remote configuration:"
-          git remote -v
-
-          # Test git access
-          git ls-remote origin gh-pages || {
-            echo "Failed to access remote repository"
-            exit 1
-          }
-
-      - name: Commit and Push Allure Report to gh-pages branch
+      - name: Commit and Push Allure Report
         if: always()
         run: |
           set -e
           cd gh-pages
-
-          # Function to update latest report content
-          # update_latest() {
-          #   local scope=$1
-          #   echo "Updating latest report content for $scope"
-            
-          #   # Find the latest run directory and remove any newlines
-          #   # local latest_run_dir=$(ls -d "$scope"/[0-9]*/ 2>/dev/null | sort -V | tail -n 1)
-          #   # latest_run_dir=$(basename "$latest_run_dir")
-          #   # latest_run_dir=${latest_run_dir%/}  # Remove trailing slash
-            
-          #   # Use UNIQUE_RUN_ID directly for latest_run_dir
-          #   local latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
-
-          #   if [ -n "$latest_run_dir" ]; then
-          #     echo "Using latest run directory: $latest_run_dir for scope $scope"
-          #     local source_dir="$scope/$latest_run_dir"
-          #     local target_dir="$scope/latest"
-              
-          #     # Remove existing latest directory if it exists
-          #     rm -rf "$target_dir" || true
-          #     echo "Removed existing latest directory (if any): $target_dir"
-
-          #     # Create the latest directory
-          #     mkdir -p "$target_dir"
-          #     echo "Created latest directory: $target_dir"
-
-          #     # Copy all content from latest run to the latest directory
-          #     cp -a "$source_dir/"* "$target_dir/" || {
-          #       echo "Failed to copy content from $source_dir to $target_dir"
-          #       echo "Source directory contents:"
-          #       ls -la "$source_dir" || true
-          #       echo "Target directory contents:"
-          #       ls -la "$target_dir" || true
-          #       exit 1
-          #     }
-          #     echo "Content copied successfully to $target_dir"
-          #   else
-          #     echo "No runs found for $scope to update content"
-          #   fi
-          # }
 
           update_latest() {
             local scope=$1
@@ -259,108 +157,46 @@ jobs:
             local target_dir="$scope/latest"
 
             if [ ! -d "$source_dir" ]; then
-              echo "Source directory $source_dir does not exist. Skipping update."
+              echo "Source directory $source_dir does not exist. Skipping."
               return 0
             fi
 
-            # Remove existing latest directory if it exists
             rm -rf "$target_dir" || true
-            echo "Removed existing latest directory (if any): $target_dir"
-
-            # Create the latest directory
             mkdir -p "$target_dir"
-            echo "Created latest directory: $target_dir"
-
-            # Copy all content from latest run to the latest directory
-            cp -a "$source_dir/"* "$target_dir/" || {
-              echo "Failed to copy content from $source_dir to $target_dir"
-              echo "Source directory contents:"
-              ls -la "$source_dir" || true
-              echo "Target directory contents:"
-              ls -la "$target_dir" || true
-              exit 1
-            }
-
-            echo "Content copied successfully to $target_dir"
+            cp -a "$source_dir/"* "$target_dir/"
+            echo "Updated $scope/latest from $source_dir"
           }
 
-          # Update content for both scopes
-          # update_latest "regression"
-          # update_latest "smoke"
-
-          # Update content if the directory exists
           if [ -d "regression" ]; then
             update_latest "regression"
-          else
-            echo "No regression reports found. Skipping regression update."
           fi
-
           if [ -d "smoke" ]; then
             update_latest "smoke"
-          else
-            echo "No smoke reports found. Skipping smoke update."
           fi
 
-          git checkout -B gh-pages
-
-          echo "Current git status:"
-          git status
-
-          echo "Changes to be committed:"
-          git diff --name-status
-
           git add .
-          # git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.RUN_NUMBER }}" || {
-          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} scope run #${{ env.UNIQUE_RUN_ID }}" || {
-            echo "No changes to commit"
-            exit 0
-          }
-
-          echo "Pushing changes to gh-pages branch..."
-          # Pull with rebase to avoid merge conflicts
-          git pull --rebase origin gh-pages || {
-            echo "Failed to pull changes"
-            git status
-            exit 1
-          }
-
-          # Push with force if needed
-          git push origin gh-pages || {
-            echo "Failed to push changes"
-            echo "Git status:"
-            git status
-            echo "Git remote -v:"
-            git remote -v
-            echo "Trying force push..."
-            git push -f origin gh-pages || {
-              echo "Force push also failed"
-              exit 1
-            }
-          }
-          echo "Changes pushed successfully"
+          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
+          git pull --rebase origin gh-pages || true
+          git push origin gh-pages
 
   deploy:
     name: Deploy Allure Report to GitHub Pages
     runs-on: ubuntu-latest
     needs: run-and-publish
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
 
     concurrency:
       group: github-pages-deployment
       cancel-in-progress: false
 
-    environment:
-      name: github-pages
-      # url: https://flyspotorg.github.io/playwrightDemoProject/
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
 
     env:
-      TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope ||github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
+      TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
-      # TEST_SCOPE: ${{ inputs.test_scope }}
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }}
@@ -382,7 +218,7 @@ jobs:
               echo "Copying $scope directory to site/"
               cp -a "$scope" site/
             else
-              echo "› no $scope folder yet, skipping"
+              echo "› No $scope folder yet, skipping"
             fi
           done
 
@@ -398,7 +234,7 @@ jobs:
       - name: Post deployment link
         run: |
           REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
-          echo "✅ Report: ${REPORT_URL}"
+          echo "✅ Report available at: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
