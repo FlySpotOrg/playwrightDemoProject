@@ -116,10 +116,10 @@ jobs:
           set -e
           echo "Preparing Allure Report..."
 
-          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
-
           LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
+
+          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
 
           mkdir -p "allure-results"
           if [ -n "$LATEST_RUN" ]; then
