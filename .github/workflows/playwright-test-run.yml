@@ -64,7 +64,7 @@ jobs:
         if: env.DISPATCH_ID != 'none'
         run: |
           echo "Renaming current run with DISPATCH_ID=${{ env.DISPATCH_ID }}"
-          RUN_ID=$(gh run view --json id --jq '.id')
+          RUN_ID=$(gh run list --workflow="Playwright Test Runner" --json databaseId,status | jq '.[0].databaseId')
           gh run rename "$RUN_ID" "Playwright Test Runner (${{ env.DISPATCH_ID }})"
         env:
           GH_TOKEN: ${{ secrets.REPO_A_PAT }}
@@ -129,6 +129,7 @@ jobs:
           echo "Contents of allure-results before report generation:"
           ls -la "allure-results" || true
 
+          cd $GITHUB_WORKSPACE
           echo "Generating Allure report..."
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
