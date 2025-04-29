@@ -198,44 +198,78 @@ jobs:
           cd gh-pages
 
           # Function to update latest report content
+          # update_latest() {
+          #   local scope=$1
+          #   echo "Updating latest report content for $scope"
+            
+          #   # Find the latest run directory and remove any newlines
+          #   # local latest_run_dir=$(ls -d "$scope"/[0-9]*/ 2>/dev/null | sort -V | tail -n 1)
+          #   # latest_run_dir=$(basename "$latest_run_dir")
+          #   # latest_run_dir=${latest_run_dir%/}  # Remove trailing slash
+            
+          #   # Use UNIQUE_RUN_ID directly for latest_run_dir
+          #   local latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
+
+          #   if [ -n "$latest_run_dir" ]; then
+          #     echo "Using latest run directory: $latest_run_dir for scope $scope"
+          #     local source_dir="$scope/$latest_run_dir"
+          #     local target_dir="$scope/latest"
+              
+          #     # Remove existing latest directory if it exists
+          #     rm -rf "$target_dir" || true
+          #     echo "Removed existing latest directory (if any): $target_dir"
+
+          #     # Create the latest directory
+          #     mkdir -p "$target_dir"
+          #     echo "Created latest directory: $target_dir"
+
+          #     # Copy all content from latest run to the latest directory
+          #     cp -a "$source_dir/"* "$target_dir/" || {
+          #       echo "Failed to copy content from $source_dir to $target_dir"
+          #       echo "Source directory contents:"
+          #       ls -la "$source_dir" || true
+          #       echo "Target directory contents:"
+          #       ls -la "$target_dir" || true
+          #       exit 1
+          #     }
+          #     echo "Content copied successfully to $target_dir"
+          #   else
+          #     echo "No runs found for $scope to update content"
+          #   fi
+          # }
+
           update_latest() {
             local scope=$1
             echo "Updating latest report content for $scope"
-            
-            # Find the latest run directory and remove any newlines
-            # local latest_run_dir=$(ls -d "$scope"/[0-9]*/ 2>/dev/null | sort -V | tail -n 1)
-            # latest_run_dir=$(basename "$latest_run_dir")
-            # latest_run_dir=${latest_run_dir%/}  # Remove trailing slash
-            
-            # Use UNIQUE_RUN_ID directly for latest_run_dir
+
             local latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
+            local source_dir="$scope/$latest_run_dir"
+            local target_dir="$scope/latest"
 
-            if [ -n "$latest_run_dir" ]; then
-              echo "Using latest run directory: $latest_run_dir for scope $scope"
-              local source_dir="$scope/$latest_run_dir"
-              local target_dir="$scope/latest"
-              
-              # Remove existing latest directory if it exists
-              rm -rf "$target_dir" || true
-              echo "Removed existing latest directory (if any): $target_dir"
-
-              # Create the latest directory
-              mkdir -p "$target_dir"
-              echo "Created latest directory: $target_dir"
-
-              # Copy all content from latest run to the latest directory
-              cp -a "$source_dir/"* "$target_dir/" || {
-                echo "Failed to copy content from $source_dir to $target_dir"
-                echo "Source directory contents:"
-                ls -la "$source_dir" || true
-                echo "Target directory contents:"
-                ls -la "$target_dir" || true
-                exit 1
-              }
-              echo "Content copied successfully to $target_dir"
-            else
-              echo "No runs found for $scope to update content"
+            if [ ! -d "$source_dir" ]; then
+              echo "Source directory $source_dir does not exist. Skipping update."
+              return 0
             fi
+
+            # Remove existing latest directory if it exists
+            rm -rf "$target_dir" || true
+            echo "Removed existing latest directory (if any): $target_dir"
+
+            # Create the latest directory
+            mkdir -p "$target_dir"
+            echo "Created latest directory: $target_dir"
+
+            # Copy all content from latest run to the latest directory
+            cp -a "$source_dir/"* "$target_dir/" || {
+              echo "Failed to copy content from $source_dir to $target_dir"
+              echo "Source directory contents:"
+              ls -la "$source_dir" || true
+              echo "Target directory contents:"
+              ls -la "$target_dir" || true
+              exit 1
+            }
+
+            echo "Content copied successfully to $target_dir"
           }
 
           # Update content for both scopes
