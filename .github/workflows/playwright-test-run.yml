@@ -35,7 +35,9 @@ on:
           - regression
 
   repository_dispatch:
-    types: [run-tests]
+    types:
+      - run-smoke-tests-from-app-repo
+      - run-regression-tests-from-app-repo
 
 permissions:
   contents: write
