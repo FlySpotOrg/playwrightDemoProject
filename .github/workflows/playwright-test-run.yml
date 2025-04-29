@@ -345,7 +345,8 @@ jobs:
       # url: https://flyspotorg.github.io/playwrightDemoProject/
 
     env:
-      TEST_SCOPE: ${{ github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
+      TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope ||github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
+      UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
       # TEST_SCOPE: ${{ inputs.test_scope }}
 
