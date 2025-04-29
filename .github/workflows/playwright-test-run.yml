@@ -60,15 +60,6 @@ jobs:
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
-      - name: Rename current run with dispatch ID
-        if: env.DISPATCH_ID != 'none'
-        run: |
-          echo "Renaming current run with DISPATCH_ID=${{ env.DISPATCH_ID }}"
-          RUN_ID=$(gh run list --workflow="Playwright Test Runner" --json databaseId,status | jq '.[0].databaseId')
-          gh run rename "$RUN_ID" "Playwright Test Runner (${{ env.DISPATCH_ID }})"
-        env:
-          GH_TOKEN: ${{ secrets.REPO_A_PAT }}
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -76,6 +67,20 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
           ref: ${{ env.CHECKOUT_REF }}
+
+      - name: Rename current run with dispatch ID
+        if: env.DISPATCH_ID != 'none'
+        run: |
+          echo "Renaming current run with DISPATCH_ID=${{ env.DISPATCH_ID }}"
+          RUN_ID=$(gh run list --workflow="Playwright Test Runner" --limit 10 --json databaseId,headBranch,event | jq -r 'map(select(.event=="repository_dispatch" and .headBranch=="${{ env.CHECKOUT_REF }}")) | sort_by(.databaseId) | reverse | .[0].databaseId')
+          echo "Resolved RUN_ID: $RUN_ID"
+          if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
+            gh run rename "$RUN_ID" "Playwright Test Runner (${{ env.DISPATCH_ID }})"
+          else
+            echo "⚠️ Could not resolve run ID for renaming"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.REPO_A_PAT }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
