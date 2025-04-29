@@ -64,9 +64,12 @@ jobs:
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
-      - name: Rename workflow run with dispatch ID
+      - name: Rename current run with dispatch ID
         if: env.DISPATCH_ID != 'none'
-        run: gh run list --limit 1 --json id | jq '.[0].id' | xargs -I{} gh run rename {} "Playwright Test Runner (${{ env.DISPATCH_ID }})"
+        run: |
+          echo "Renaming current run with DISPATCH_ID=${{ env.DISPATCH_ID }}"
+          RUN_ID=$(gh run view --json id --jq '.id')
+          gh run rename "$RUN_ID" "Playwright Test Runner (${{ env.DISPATCH_ID }})"
         env:
           GH_TOKEN: ${{ secrets.REPO_A_PAT }}
 
