@@ -61,8 +61,15 @@ jobs:
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       RUN_NUMBER: ${{ github.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
+      DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
+      - name: Rename workflow run with dispatch ID
+        if: env.DISPATCH_ID != 'none'
+        run: gh run list --limit 1 --json id | jq '.[0].id' | xargs -I{} gh run rename {} "Playwright Test Runner (${{ env.DISPATCH_ID }})"
+        env:
+          GH_TOKEN: ${{ secrets.REPO_A_PAT }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
