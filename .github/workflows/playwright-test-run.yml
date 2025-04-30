@@ -101,8 +101,11 @@ jobs:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
-          npm run test:${{ env.TEST_SCOPE }} || echo "::set-output name=test_status::failure"
-          echo "::set-output name=test_status::success"
+          if ! npm run test:${{ env.TEST_SCOPE }}; then
+            echo "test_status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "test_status=success" >> $GITHUB_OUTPUT
+          fi
 
       - name: Checkout gh-pages branch
         if: always()
@@ -213,7 +216,7 @@ jobs:
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }}
-      test_status: ${{ env.TEST_STATUS }}
+      test_status: ${{ needs.run-and-publish.outputs.test_status }}
 
     steps:
       - name: Checkout gh-pages branch
