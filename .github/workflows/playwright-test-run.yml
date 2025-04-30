@@ -254,3 +254,6 @@ jobs:
           REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Sleep 30 seconds
+        run: sleep 30
