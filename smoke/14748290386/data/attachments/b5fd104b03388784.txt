@@ -1,0 +1,16 @@
+2025-04-30 06:36:13 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-04-30 06:36:13 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"fyNZntpkLVQrHHAW"}
+  ← headers: {"date":"Wed, 30 Apr 2025 06:36:13 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=N5X4gsaJlDFIhse07Tr%2B9cN2Gtcr0rRnlj6Y1ZyWU9VDm%2FxsE%2Bn4Seh2lGK%2FS26%2F7bnzEUh3ze9g38Ei0dcLaVrr2MAJZS%2B%2BZDFpuvjuvQRaT6L1Fu9oVPJryn1rdTHIlG6zd9wh1UuXTlKxZg%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"93850608decb4b21-ORD","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=2819&min_rtt=2809&rtt_var=1075&sent=5&recv=5&lost=0&retrans=0&sent_bytes=2871&recv_bytes=780&delivery_rate=1479792&cwnd=247&unsent_bytes=0&cid=18cf3162a4b5de93&ts=267&x=0\""}
+2025-04-30 06:36:13 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=fyNZntpkLVQrHHAW"}
+2025-04-30 06:36:14 info: [HTTP RESPONSE] GET /room/ → 200
+  ← params: undefined
+  ← data: {"rooms":[]}
+  ← headers: {"date":"Wed, 30 Apr 2025 06:36:14 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=bSrMHUFqV%2FiO4AWCTbc2Aowv2APrjqq3eHQdgwSJxAhF2G8iEu7eQ59JVKfs%2FBBmN8K%2Bkrb%2Ftq3v%2BQCkVPCKCm9Sn%2BSA2rqcBt9vZxEAlKeE0yQLvr3FxtjaoCozERN0BJKbh1m1OT%2Fq57W6nQ%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"9385060c1e691135-ORD","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=2559&min_rtt=1845&rtt_var=1202&sent=3&recv=5&lost=0&retrans=0&sent_bytes=219&recv_bytes=998&delivery_rate=773983&cwnd=245&unsent_bytes=0&cid=c9dff556d4bb867f&ts=243&x=0\""}
