@@ -1,0 +1,16 @@
+2025-04-30 05:03:48 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-04-30 05:03:49 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"dwJUlPumqfEDc97x"}
+  ← headers: {"date":"Wed, 30 Apr 2025 05:03:49 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=pJACpBoAMZQqYUYO8gJz6XwD993wY96Bp0%2BPXL5j5RObyeH54hPqLAtG733hd2dBf8g1BV92W0Tqw0j19kKKpcfsm3gLbqJKQ%2FK0jAXSsG5%2BR7Ar8ZMeBDrbnQIMcxvnxOvJUZzz%2FZZdC20k0Q%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"93847eaacbc528a0-IAD","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=5190&min_rtt=5154&rtt_var=1959&sent=5&recv=5&lost=0&retrans=0&sent_bytes=2870&recv_bytes=780&delivery_rate=831199&cwnd=252&unsent_bytes=0&cid=d1fa63cd9b35e638&ts=267&x=0\""}
+2025-04-30 05:03:49 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=dwJUlPumqfEDc97x"}
+2025-04-30 05:03:49 info: [HTTP RESPONSE] GET /room/ → 200
+  ← params: undefined
+  ← data: {"rooms":[{"roomid":27,"roomName":"104","type":"Family","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.jpg","description":"Please enter a description for this room","features":["WiFi","TV","Refreshments","Safe"],"roomPrice":500},{"roomid":28,"roomName":"105","type":"Double","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.jpg","description":"Please enter a description for this room","features":["WiFi","TV","Refreshments","Safe"],"roomPrice":400}]}
+  ← headers: {"date":"Wed, 30 Apr 2025 05:03:49 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"93847eae1c76879b-IAD","alt-svc":"h3=\":443\"; ma=86400"}
