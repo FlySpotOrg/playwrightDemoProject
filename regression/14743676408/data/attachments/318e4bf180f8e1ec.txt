@@ -1,0 +1,33 @@
+2025-04-30 00:02:18 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-04-30 00:02:19 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"OlW5xfWfnC19ZOlU"}
+  ← headers: {"date":"Wed, 30 Apr 2025 00:02:19 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=4T79uZYkdHpKCHT33WxDyuq40TvQP0HwLAc3Vj8jEsxQ%2FGblIQKOj7KqEiwAi7tGBmZ4uXhTS5HlC%2BELRODQf%2Fm4OEfR4LgdWtTkNkqyf5bZ%2Fp%2FRYoiOgFT16opXMRuX6n1KQJf23RtEtGYUaw%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"9382c503f884f0a8-DFW","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=7327&min_rtt=7326&rtt_var=2749&sent=5&recv=5&lost=0&retrans=0&sent_bytes=2870&recv_bytes=780&delivery_rate=584049&cwnd=252&unsent_bytes=0&cid=157c4967f382bdd7&ts=198&x=0\""}
+2025-04-30 00:02:19 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=OlW5xfWfnC19ZOlU"}
+2025-04-30 00:02:19 info: [HTTP RESPONSE] GET /room/ → 200
+  ← params: undefined
+  ← data: {"rooms":[{"roomid":1,"roomName":"101","type":"Single","accessible":true,"image":"/images/room1.jpg","description":"Aenean porttitor mauris sit amet lacinia molestie. In posuere accumsan aliquet. Maecenas sit amet nisl massa. Interdum et malesuada fames ac ante.","features":["TV","WiFi","Safe"],"roomPrice":100},{"roomid":2,"roomName":"102","type":"Double","accessible":true,"image":"/images/room2.jpg","description":"Vestibulum sollicitudin, lectus ac mollis consequat, lorem orci ultrices tellus, eleifend euismod tortor dui egestas erat. Phasellus et ipsum nisl. ","features":["TV","Radio","Safe"],"roomPrice":150},{"roomid":3,"roomName":"103","type":"Suite","accessible":true,"image":"/images/room3.jpg","description":"Etiam metus metus, fringilla ac sagittis id, consequat vel neque. Nunc commodo quis nisl nec posuere. Etiam at accumsan ex. ","features":["Radio","WiFi","Safe"],"roomPrice":225}]}
+  ← headers: {"date":"Wed, 30 Apr 2025 00:02:19 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=C3hfgvbPms%2BWZX%2BpYDeFC3u54Ed%2BRvlRjRAp%2BoTlvLhS695dXg7jBW9Mb8N8VGkAFyuqy3aDxCpERo%2B9wIvkNdEkpC01lbGck4cqVYbKzAKBlDEr8poCAJwXxveAtB446DtZNxT3Wl%2Bd2fkH3A%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"9382c507ce65ead9-DFW","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=8515&min_rtt=8476&rtt_var=3206&sent=3&recv=5&lost=0&retrans=0&sent_bytes=219&recv_bytes=998&delivery_rate=168475&cwnd=250&unsent_bytes=0&cid=1dc50f8832752f3f&ts=286&x=0\""}
+2025-04-30 00:02:19 info: [HTTP REQUEST] GET https://automationintesting.online/api/booking/?roomid=1
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=OlW5xfWfnC19ZOlU"}
+2025-04-30 00:02:20 info: [HTTP RESPONSE] GET /booking/?roomid=1 → 200
+  ← params: undefined
+  ← data: {"bookings":[{"bookingid":4,"roomid":1,"firstname":"John","lastname":"Doe","depositpaid":false,"bookingdates":{"checkin":"2025-04-29","checkout":"2025-04-30"}}]}
+  ← headers: {"date":"Wed, 30 Apr 2025 00:02:20 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=%2F4vXqkLLOrOx%2FqjoGusxwHqAI%2BESKVy8i3WjRWG5520pSETMjwyyhitGf%2B6qNPo4Jhmzb2PTa4MydJQoJ2VJ55fga9q70GkJWU57ugL8FxmCIQzhy0UZr%2FHS18yRYQ5VJu7qaGa7F6yc7dyCoQ%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"9382c50b7c6e45e9-DFW","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=9498&min_rtt=9478&rtt_var=3595&sent=3&recv=5&lost=0&retrans=0&sent_bytes=219&recv_bytes=1010&delivery_rate=148117&cwnd=250&unsent_bytes=0&cid=a9753e232cc28b64&ts=284&x=0\""}
+2025-04-30 00:02:20 info: [HTTP REQUEST] DELETE https://automationintesting.online/api/booking/4
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=OlW5xfWfnC19ZOlU"}
+2025-04-30 00:02:20 info: [HTTP RESPONSE] DELETE /booking/4 → 200
+  ← params: undefined
+  ← data: {"success":true}
+  ← headers: {"date":"Wed, 30 Apr 2025 00:02:20 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","cf-cache-status":"DYNAMIC","report-to":"{\"endpoints\":[{\"url\":\"https:\\/\\/a.nel.cloudflare.com\\/report\\/v4?s=tMVv0ecy0HJseTRa2fGnPiGzdp%2BWknMylVsCSSHK64zpd%2F3fYZoeYiRQ3liCd69FzJGkA3JogSApM%2F7BKfCKXxarRwmwScFX7D2cN6YMre8VLcpTzdpp4Po46%2BZCM4j1lJa8NUlU7ZLCvVN0vw%3D%3D\"}],\"group\":\"cf-nel\",\"max_age\":604800}","nel":"{\"success_fraction\":0,\"report_to\":\"cf-nel\",\"max_age\":604800}","server":"cloudflare","cf-ray":"9382c50d6a7c6796-DFW","alt-svc":"h3=\":443\"; ma=86400","server-timing":"cfL4;desc=\"?proto=TCP&rtt=8543&min_rtt=8427&rtt_var=3243&sent=3&recv=5&lost=0&retrans=0&sent_bytes=219&recv_bytes=1006&delivery_rate=169455&cwnd=250&unsent_bytes=0&cid=e2e3a6b31e6a3359&ts=294&x=0\""}
+2025-04-30 00:02:20 info: User has been logged out.
