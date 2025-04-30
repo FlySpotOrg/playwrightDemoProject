@@ -96,10 +96,13 @@ jobs:
 
       - name: Run Playwright Tests (${{ env.TEST_SCOPE }})
         continue-on-error: true
+        id: run_tests
         env:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-        run: npm run test:${{ env.TEST_SCOPE }}
+        run: |
+          npm run test:${{ env.TEST_SCOPE }} || echo "::set-output name=test_status::failure"
+          echo "::set-output name=test_status::success"
 
       - name: Checkout gh-pages branch
         if: always()
@@ -191,6 +194,7 @@ jobs:
     name: Deploy Allure Report to GitHub Pages
     runs-on: ubuntu-latest
     needs: run-and-publish
+    if: always()
 
     concurrency:
       group: github-pages-deployment
@@ -205,9 +209,11 @@ jobs:
       TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
+      TEST_STATUS: ${{ needs.run-and-publish.outputs.test_status }}
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }}
+      test_status: ${{ env.TEST_STATUS }}
 
     steps:
       - name: Checkout gh-pages branch
@@ -257,3 +263,11 @@ jobs:
 
       - name: Sleep 30 seconds
         run: sleep 30
+
+      - name: Set final job status
+        if: always()
+        run: |
+          if [ "${{ needs.run-and-publish.outputs.test_status }}" == "failure" ]; then
+            echo "Tests failed, marking job as failed"
+            exit 1
+          fi
