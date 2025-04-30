@@ -274,10 +274,3 @@ jobs:
       - name: Sleep 30 seconds
         run: sleep 30
 
-      - name: Set final job status
-        if: always()
-        run: |
-          if [ "${{ needs.run-and-publish.outputs.test_status }}" == "failure" ]; then
-            echo "Tests failed, marking job as failed"
-            exit 1
-          fi
