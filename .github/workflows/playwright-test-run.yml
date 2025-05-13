@@ -13,6 +13,13 @@ on:
         required: true
         type: string
         default: "regression"
+    secrets:
+      ADMIN_USERNAME:
+        required: true
+      ADMIN_PASSWORD:
+        required: true
+      WORKFLOW_TOKEN:
+        required: true
 
   workflow_dispatch:
     inputs:
@@ -223,7 +230,7 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REPO_A_PAT }}
 
       - name: Build site folder
         run: |
