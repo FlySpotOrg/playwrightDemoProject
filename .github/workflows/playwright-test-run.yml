@@ -223,7 +223,7 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           fetch-depth: 0
-          token: ${{ secrets.REPO_A_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build site folder
         run: |
