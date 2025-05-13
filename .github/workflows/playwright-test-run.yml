@@ -213,7 +213,6 @@ jobs:
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
       TEST_STATUS: ${{ needs.run-and-publish.outputs.test_status }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }}
@@ -226,7 +225,7 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REPO_A_PAT }}
 
       - name: Build site folder
         run: |
