@@ -1,8 +1,0 @@
-2025-05-13 03:00:54 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
-  → params: undefined
-  → data:   {"username":"","password":""}
-  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
-2025-05-13 03:00:55 info: [HTTP RESPONSE] POST /auth/login → 401
-  ← params: undefined
-  ← data: {"error":"Invalid credentials"}
-  ← headers: {"date":"Tue, 13 May 2025 03:00:55 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=2HZyb%2FvKJFFY03e%2BaBOwre%2BDfHqFZ8ng2RbhzURmpX%2BCakYMi4WRG7Alu1DDOO7pYghb7muC8aqCn20rqxTUs8l6J22JXwZ8IuDehjlCBpJTuixSrz93WbLcQ4B7ZXvdm8c7yQZ3G9VQVHe%2BIw%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"93eee8838be1a606-IAD","alt-svc":"h3=\":443\"; ma=86400"}
