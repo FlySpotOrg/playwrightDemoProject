@@ -13,15 +13,6 @@ on:
         required: true
         type: string
         default: "regression"
-    secrets:
-      ADMIN_USERNAME:
-        required: true
-      ADMIN_PASSWORD:
-        required: true
-      WORKFLOW_TOKEN:
-        required: true
-      REPO_A_PAT:
-        required: true
 
   workflow_dispatch:
     inputs:
