@@ -69,7 +69,7 @@ jobs:
           if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
             curl -X PATCH \
               -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token ${{ secrets.REPO_A_PAT }}" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ env.CURRENT_REPO }}/actions/runs/$RUN_ID" \
               -d "{\"name\":\"Playwright Test Runner (${{ env.DISPATCH_ID }})\"}"
           else
@@ -107,7 +107,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
           fetch-depth: 0
-          token: ${{ secrets.REPO_A_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
       - name: Prepare Allure Report
@@ -146,7 +146,7 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git remote set-url origin https://${{ secrets.REPO_A_PAT }}@github.com/FlySpotOrg/playwrightDemoProject.git
+          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/FlySpotOrg/playwrightDemoProject.git
 
       - name: Commit and Push Allure Report
         if: always()
@@ -223,7 +223,7 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           fetch-depth: 0
-          token: ${{ secrets.REPO_A_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build site folder
         run: |
