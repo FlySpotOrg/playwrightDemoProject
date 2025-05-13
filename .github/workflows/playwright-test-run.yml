@@ -13,11 +13,6 @@ on:
         required: true
         type: string
         default: "regression"
-    secrets:
-      ADMIN_USERNAME:
-        required: true
-      ADMIN_PASSWORD:
-        required: true
 
   workflow_dispatch:
     inputs:
@@ -85,15 +80,16 @@ jobs:
         run: |
           npm ci
           npx playwright install
+          npm install dotenvx --save-dev
+
+      - name: Load environment variables with dotenvx
+        run: npx dotenvx run -- printenv | sort
 
       - name: Run Playwright Tests (${{ env.TEST_SCOPE }})
         continue-on-error: true
         id: run_tests
-        env:
-          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
-          if ! npm run test:${{ env.TEST_SCOPE }}; then
+          if ! dotenvx run -- npm run test:${{ env.TEST_SCOPE }}; then
             echo "test_status=failure" >> $GITHUB_OUTPUT
           else
             echo "test_status=success" >> $GITHUB_OUTPUT
