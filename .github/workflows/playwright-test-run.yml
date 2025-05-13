@@ -32,11 +32,6 @@ on:
           - smoke
           - regression
 
-  repository_dispatch:
-    types:
-      - run-smoke-tests-from-app-repo
-      - run-regression-tests-from-app-repo
-
 permissions:
   contents: write
   pages: write
@@ -218,6 +213,7 @@ jobs:
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
       TEST_STATUS: ${{ needs.run-and-publish.outputs.test_status }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }}
@@ -230,7 +226,7 @@ jobs:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           fetch-depth: 0
-          token: ${{ secrets.REPO_A_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build site folder
         run: |
