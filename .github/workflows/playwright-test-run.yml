@@ -80,16 +80,13 @@ jobs:
         run: |
           npm ci
           npx playwright install
-          npm install dotenvx --save-dev
-
-      - name: Load environment variables with dotenvx
-        run: npx dotenvx run -- printenv | sort
+          curl -sfS https://dotenvx.sh/install.sh | sh
 
       - name: Run Playwright Tests (${{ env.TEST_SCOPE }})
         continue-on-error: true
         id: run_tests
         run: |
-          if ! dotenvx run -- npm run test:${{ env.TEST_SCOPE }}; then
+          if ! npxdotenvx run -- npm run test:${{ env.TEST_SCOPE }}; then
             echo "test_status=failure" >> $GITHUB_OUTPUT
           else
             echo "test_status=success" >> $GITHUB_OUTPUT
