@@ -13,6 +13,11 @@ on:
         required: true
         type: string
         default: "regression"
+    secrets:
+      ADMIN_USERNAME:
+        required: true
+      ADMIN_PASSWORD:
+        required: true
 
   workflow_dispatch:
     inputs:
@@ -45,8 +50,6 @@ jobs:
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
-      ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout code
