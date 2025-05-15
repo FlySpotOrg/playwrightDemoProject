@@ -92,6 +92,21 @@ jobs:
             echo "test_status=success" >> $GITHUB_OUTPUT
           fi
 
+      - name: Execution Context Summary
+        run: |
+          echo "### 🔍 Trigger Context" >> $GITHUB_STEP_SUMMARY
+          echo "- Event: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Run ID: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "- Triggered manually" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "- Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "- PR: [#${{ github.event.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            echo "- External Dispatch ID: \`${{ env.DISPATCH_ID }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Checkout gh-pages branch
         if: always()
         uses: actions/checkout@v4
@@ -166,11 +181,25 @@ jobs:
             echo "Updated $scope/latest from $source_dir"
           }
 
+          generate_history_index() {
+            local scope=$1
+            local target_file="$scope/history.md"
+
+            echo "### 📜 Test Report History for \`$scope\`" > "$target_file"
+            for dir in $(ls -1d $scope/*/ | sort -Vr); do
+              dir=${dir%/}
+              id=$(basename "$dir")
+              echo "- [Run $id](./$id/)" >> "$target_file"
+            done
+          }
+
           if [ -d "regression" ]; then
             update_latest "regression"
+            generate_history_index "regression"
           fi
           if [ -d "smoke" ]; then
             update_latest "smoke"
+            generate_history_index "smoke"
           fi
 
           git add .
