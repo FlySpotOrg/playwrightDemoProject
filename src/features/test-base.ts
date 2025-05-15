@@ -6,6 +6,15 @@ import ApiClient from "../api/api-client";
 import { CleanupHelper } from "../api/cleanup-helper";
 import { RoomApiHelper } from "../api/room-helper";
 import { BookingApiHelper } from "../api/booking-helper";
+import allure from "allure-js-commons";
+
+baseTest.beforeEach(async ({}, testInfo) => {
+  for (const annotation of testInfo.annotations) {
+    if (annotation.type === 'tag') {
+      allure.tag(annotation.description);
+    }
+  }
+});
 
 export const test = baseTest.extend<{
   apiClient: ApiClient;
