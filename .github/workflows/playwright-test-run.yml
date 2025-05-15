@@ -139,10 +139,24 @@ jobs:
             fi
           fi
 
-          echo "Contents of allure-results before report generation:"
-          ls -la "allure-results" || true
+      - name: Add Allure Executor Info
+        run: |
+          mkdir -p allure-results
+          cat <<EOF > allure-results/executor.json
+          {
+            "name": "GitHub Actions",
+            "type": "github",
+            "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "buildOrder": "${{ github.run_number }}",
+            "buildName": "Playwright Test Runner",
+            "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "reportUrl": "https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
+            "executor": "GitHub Actions"
+          }
+          EOF
 
-          cd $GITHUB_WORKSPACE
+      - name: Generate Allure report
+        run: |
           echo "Generating Allure report..."
           npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
