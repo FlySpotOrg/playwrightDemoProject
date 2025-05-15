@@ -144,14 +144,14 @@ jobs:
           mkdir -p allure-results
           cat <<EOF > allure-results/executor.json
           {
-            "name": "${{ github.run_name }}",
+            "name": "GitHub Actions",
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "buildOrder": "${{ github.run_number }}",
-            "buildName": "${{ github.run_name }}",
+            "buildName": "Playwright Test Runner",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "reportUrl": "https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
-            "executor": "${{ github.run_name }}"
+            "executor": "GitHub Actions"
           }
           EOF
 
