@@ -11,8 +11,8 @@ import allure from "allure-js-commons";
 baseTest.beforeEach(async ({}, testInfo) => {
   for (const annotation of testInfo.annotations) {
     if (annotation.type === 'tag') {
-      allure.tag(annotation.description);
-      allure.suite(annotation.description);
+      await allure.tag(annotation.description);
+      await allure.suite(annotation.description);
     }
   }
 });
