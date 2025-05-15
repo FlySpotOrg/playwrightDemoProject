@@ -12,6 +12,7 @@ baseTest.beforeEach(async ({}, testInfo) => {
   for (const annotation of testInfo.annotations) {
     if (annotation.type === 'tag') {
       allure.tag(annotation.description);
+      allure.suite(annotation.description);
     }
   }
 });
