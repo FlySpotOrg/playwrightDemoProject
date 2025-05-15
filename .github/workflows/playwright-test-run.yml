@@ -143,7 +143,6 @@ jobs:
         run: |
           mkdir -p allure-results
           cat <<EOF > allure-results/executor.json
-          cat <<EOF > allure-results/executor.json
           {
             "name": "${{ github.run_name }}",
             "type": "github",
