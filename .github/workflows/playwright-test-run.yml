@@ -50,11 +50,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
+      test_object: ${{ env.TEST_OBJECT }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
       test_status: ${{ steps.run_tests.outputs.test_status }}
 
     env:
-      UNIQUE_RUN_ID: ${{ github.run_id }}
+      UNIQUE_RUN_ID: ${{ github.event.client_payload.dispatch_id || github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       TEST_OBJECT: ${{ inputs.test_object || github.event.client_payload.test_object || github.event.inputs.test_object || 'admin' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
@@ -266,6 +267,7 @@ jobs:
 
     env:
       TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
+      TEST_OBJECT: ${{ needs.run-and-publish.outputs.test_object }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       GITHUB_ORG: ${{ github.repository_owner }}
       GITHUB_REPO: ${{ github.event.repository.name }}
