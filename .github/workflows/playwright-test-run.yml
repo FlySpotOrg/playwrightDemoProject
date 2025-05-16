@@ -175,7 +175,7 @@ jobs:
           }
           EOF
           # Set Allure report title
-          echo "allure.report.title=Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}" > allure-results/allure.properties
+          echo "allure.report.title=Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}" > allure.properties
 
       - name: Generate Allure report
         run: |
