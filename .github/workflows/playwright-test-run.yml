@@ -183,7 +183,8 @@ jobs:
       - name: Generate Allure report
         run: |
           echo "Generating Allure report..."
-          npm run allure:generate -- --name "Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}" \
+          npm run allure:generate -- \
+            --name "Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}" \
             --output "gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
             exit 1
