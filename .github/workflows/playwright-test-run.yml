@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   run-and-publish:
-    name: Run Playwright Tests
+    name: Run Tests [${{ inputs.test_scope }} | ${{inputs.test_object}}]
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
@@ -173,6 +173,11 @@ jobs:
             "executor": "GitHub Actions"
           }
           EOF
+
+      - name: Set Allure Report Title
+        run: |
+          mkdir -p allure-results
+          echo "allure.report.title=Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }})" > allure-results/allure.properties
 
       - name: Generate Allure report
         run: |
