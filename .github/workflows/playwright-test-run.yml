@@ -55,7 +55,7 @@ jobs:
       test_status: ${{ steps.run_tests.outputs.test_status }}
 
     env:
-      UNIQUE_RUN_ID: ${{ github.event.client_payload.dispatch_id || github.run_id }}
+      UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       TEST_OBJECT: ${{ inputs.test_object || github.event.client_payload.test_object || github.event.inputs.test_object || 'admin' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
@@ -116,7 +116,7 @@ jobs:
         run: |
           echo "### 🔍 Trigger Context" >> $GITHUB_STEP_SUMMARY
           echo "- Event: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Run ID: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "- Run ID: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }})" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "- Triggered manually" >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ github.event_name }}" == "push" ]]; then
@@ -160,7 +160,7 @@ jobs:
           fi
 
           # Set Allure report title
-          echo "allure.report.title=Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }})" > allure-results/allure.properties
+          echo "allure.report.title=Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }}) ${{ env.UNIQUE_RUN_ID }}" > allure-results/allure.properties
 
       - name: Add Allure Executor Info
         run: |
@@ -200,12 +200,12 @@ jobs:
           cd gh-pages
 
           update_latest() {
-            local scope=$1
-            echo "Updating latest report content for $scope"
+            local path=$1
+            echo "Updating latest report content for $path"
 
             local latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
-            local source_dir="$scope/$latest_run_dir"
-            local target_dir="$scope/latest"
+            local source_dir="$path/$latest_run_dir"
+            local target_dir="$path/latest"
 
             if [ ! -d "$source_dir" ]; then
               echo "Source directory $source_dir does not exist. Skipping."
@@ -215,29 +215,29 @@ jobs:
             rm -rf "$target_dir" || true
             mkdir -p "$target_dir"
             cp -a "$source_dir/"* "$target_dir/"
-            echo "Updated $scope/latest from $source_dir"
+            echo "Updated $path/latest from $source_dir"
           }
 
           generate_history_index() {
-            local scope=$1
-            local target_file="$scope/history.md"
+            local path=$1
+            local target_file="$path/history.md"
 
-            echo "### 📜 Test Report History for \`$scope\`" > "$target_file"
-            for dir in $(ls -1d $scope/*/ | sort -Vr); do
+            echo "### 📜 Test Report History for \`$path\`" > "$target_file"
+            for dir in $(ls -1d $path/*/ | sort -Vr); do
               dir=${dir%/}
               id=$(basename "$dir")
               echo "- [Run $id](./$id/)" >> "$target_file"
             done
           }
 
-          if [ -d "regression" ]; then
-            update_latest "regression"
-            generate_history_index "regression"
-          fi
-          if [ -d "smoke" ]; then
-            update_latest "smoke"
-            generate_history_index "smoke"
-          fi
+          for object in admin compass admin-compass-integration; do
+            for scope in regression smoke; do
+              if [ -d "$object/$scope" ]; then
+                update_latest "$object/$scope"
+                generate_history_index "$object/$scope"
+              fi
+            done
+          done
 
           git add .
           git commit -m "Update Allure Report for ${{ env.TEST_OBJECT }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
