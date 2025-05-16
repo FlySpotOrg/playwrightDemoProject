@@ -18,8 +18,9 @@ test.describe("Hotel Booking Website Tests", () => {
 
   test(
     "User should be able to book a room",
-    { tag: ["@smoke", "@regression"] },
+    { tag: ["@smoke", "@regression", "@admin"] },
     async ({ authHelper, bookingApiHelper, roomApiHelper }) => {
+
       const bookingDetails: BookingDetails = {
         firstName: "John",
         lastName: "Doe",
@@ -59,7 +60,7 @@ test.describe("Hotel Booking Website Tests", () => {
     }
   );
 
-  test("User should be able to submit contact form", { tag: "@regression" }, async ({}) => {
+  test("User should be able to submit contact form", { tag: ["@regression", "@compass"] }, async ({}) => {
     const contactFormData: ContactForm = {
       name: "Jane Smith",
       email: "jane.smith@example.com",
@@ -86,7 +87,7 @@ test.describe("Hotel Booking Website Tests", () => {
     });
   });
 
-  test("Admin should handle login", async ({}) => {
+  test("Admin should handle login", { tag: ["@regression", "@admin"] }, async ({}) => {
     const adminCredentials: Credentials = {
       username: "admin",
       password: "password",

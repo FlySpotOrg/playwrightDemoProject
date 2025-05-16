@@ -13,6 +13,11 @@ on:
         required: true
         type: string
         default: "regression"
+      test_object:
+        description: "Test object to run"
+        required: true
+        type: string
+        default: "admin"
 
   workflow_dispatch:
     inputs:
@@ -24,6 +29,15 @@ on:
         options:
           - smoke
           - regression
+      test_object:
+        description: "Select test object"
+        type: choice
+        required: false
+        default: "admin"
+        options:
+          - admin
+          - compass
+          - admin-compass-integration
 
 permissions:
   contents: write
@@ -42,6 +56,7 @@ jobs:
     env:
       UNIQUE_RUN_ID: ${{ github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
+      TEST_OBJECT: ${{ inputs.test_object || github.event.client_payload.test_object || github.event.inputs.test_object || 'admin' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: FlySpotOrg/playwrightDemoProject
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
@@ -82,11 +97,15 @@ jobs:
           npx playwright install
           curl -sfS https://dotenvx.sh/install.sh | sh
 
-      - name: Run Playwright Tests (${{ env.TEST_SCOPE }})
+      - name: Run Playwright Tests (${{ env.TEST_SCOPE }}, ${{ env.TEST_OBJECT }})
         continue-on-error: true
         id: run_tests
         run: |
-          if ! npx dotenvx run -- npm run test:${{ env.TEST_SCOPE }}; then
+          SCOPE_ARG="--grep @${{ env.TEST_SCOPE }}"
+          OBJECT_ARG="--grep @${{ env.TEST_OBJECT }}"
+          CMD="npx dotenvx run -- npx playwright test $SCOPE_ARG $OBJECT_ARG"
+          echo "Running: $CMD"
+          if ! $CMD; then
             echo "test_status=failure" >> $GITHUB_OUTPUT
           else
             echo "test_status=success" >> $GITHUB_OUTPUT
