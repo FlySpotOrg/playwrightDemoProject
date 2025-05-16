@@ -174,12 +174,9 @@ jobs:
             "executor": "GitHub Actions"
           }
           EOF
-          # Set Allure report title
-          echo "allure.report.title=Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}" > ./allure-results/allure.properties
 
       - name: Add Allure Environment Info
         run: |
-          mkdir -p allure-results
           echo "Test Object: ${{ env.TEST_OBJECT }}" > allure-results/environment.properties
           echo "Test Scope: ${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
 
