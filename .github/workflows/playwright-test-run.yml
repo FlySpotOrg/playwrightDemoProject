@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   run-and-publish:
-    name: Run Tests [${{ inputs.test_scope }} | ${{inputs.test_object}}]
+    name: Run Tests [${{ inputs.test_object }} | ${{ inputs.test_scope }}]
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
@@ -98,7 +98,7 @@ jobs:
           npx playwright install
           curl -sfS https://dotenvx.sh/install.sh | sh
 
-      - name: Run Playwright Tests (${{ env.TEST_SCOPE }}, ${{ env.TEST_OBJECT }})
+      - name: Run Playwright Tests (${{ env.TEST_OBJECT }}, ${{ env.TEST_SCOPE }})
         continue-on-error: true
         id: run_tests
         run: |
@@ -160,7 +160,7 @@ jobs:
           fi
 
           # Set Allure report title
-          echo "allure.report.title=Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }}) ${{ env.UNIQUE_RUN_ID }}" > allure-results/allure.properties
+          echo "allure.report.title=Playwright Test Run (${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}) #${{ env.UNIQUE_RUN_ID }}" > allure-results/allure.properties
 
       - name: Add Allure Executor Info
         run: |
@@ -171,7 +171,7 @@ jobs:
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "buildOrder": "${{ github.run_number }}",
-            "buildName": "Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }}) ${{ github.run_id }}",
+            "buildName": "Playwright Test Run (${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}) #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
             "executor": "GitHub Actions"
@@ -219,22 +219,15 @@ jobs:
           }
 
           generate_history_index() {
-            local path=$1
-            local target_file="$path/history.md"
-
-            echo "### 📜 Test Report History for \`$path\`" > "$target_file"
-            for dir in $(ls -1d $path/*/ | sort -Vr); do
-              dir=${dir%/}
-              id=$(basename "$dir")
-              echo "- [Run $id](./$id/)" >> "$target_file"
-            done
+            # No-op: history.md generation removed as per user request
+            return 0
           }
 
           for object in admin compass admin-compass-integration; do
             for scope in regression smoke; do
               if [ -d "$object/$scope" ]; then
                 update_latest "$object/$scope"
-                generate_history_index "$object/$scope"
+                # generate_history_index "$object/$scope"  # Removed
               fi
             done
           done
@@ -249,6 +242,14 @@ jobs:
         run: |
           echo "Tests failed, marking job as failed"
           exit 1
+
+      - name: Patch Allure Report Title
+        run: |
+          SUMMARY_FILE="gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/widgets/summary.json"
+          TITLE="Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}"
+          if [ -f "$SUMMARY_FILE" ]; then
+            jq --arg title "$TITLE" '.reportName = $title' "$SUMMARY_FILE" > tmp.$$.json && mv tmp.$$.json "$SUMMARY_FILE"
+          fi
 
   deploy:
     name: Deploy Allure Report to GitHub Pages
@@ -266,8 +267,8 @@ jobs:
       id-token: write
 
     env:
-      TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       TEST_OBJECT: ${{ needs.run-and-publish.outputs.test_object }}
+      TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       GITHUB_ORG: ${{ github.repository_owner }}
       GITHUB_REPO: ${{ github.event.repository.name }}
