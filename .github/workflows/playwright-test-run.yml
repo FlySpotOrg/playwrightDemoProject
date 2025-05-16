@@ -289,12 +289,12 @@ jobs:
       - name: Build site folder
         run: |
           mkdir -p site
-          for scope in regression smoke; do
-            if [ -d "$scope" ]; then
-              echo "Copying $scope directory to site/"
-              cp -a "$scope" site/
+          for object in admin compass admin-compass-integration; do
+            if [ -d "$object" ]; then
+              echo "Copying $object directory to site/"
+              cp -a "$object" site/
             else
-              echo "› No $scope folder yet, skipping"
+              echo "› No $object folder yet, skipping"
             fi
           done
 
