@@ -58,7 +58,7 @@ jobs:
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       TEST_OBJECT: ${{ inputs.test_object || github.event.client_payload.test_object || github.event.inputs.test_object || 'admin' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
-      CURRENT_REPO: FlySpotOrg/playwrightDemoProject
+      CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
@@ -143,10 +143,10 @@ jobs:
           set -e
           echo "Preparing Allure Report..."
 
-          LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
+          LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
 
-          mkdir -p "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
+          mkdir -p "gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
 
           mkdir -p "allure-results"
           if [ -n "$LATEST_RUN" ]; then
@@ -158,6 +158,9 @@ jobs:
             fi
           fi
 
+          # Set Allure report title
+          echo "allure.report.title=Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }})" > allure-results/allure.properties
+
       - name: Add Allure Executor Info
         run: |
           mkdir -p allure-results
@@ -167,22 +170,17 @@ jobs:
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "buildOrder": "${{ github.run_number }}",
-            "buildName": "Playwright Test Runner",
+            "buildName": "Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }}) ${{ github.run_id }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
             "executor": "GitHub Actions"
           }
           EOF
 
-      - name: Set Allure Report Title
-        run: |
-          mkdir -p allure-results
-          echo "allure.report.title=Playwright Test Run (${{ env.TEST_SCOPE }} | ${{ env.TEST_OBJECT }})" > allure-results/allure.properties
-
       - name: Generate Allure report
         run: |
           echo "Generating Allure report..."
-          npm run allure:generate -- --output "gh-pages/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
+          npm run allure:generate -- --output "gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
             exit 1
           }
@@ -192,7 +190,7 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/FlySpotOrg/playwrightDemoProject.git
+          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.CURRENT_REPO }}.git
 
       - name: Commit and Push Allure Report
         if: always()
@@ -241,7 +239,7 @@ jobs:
           fi
 
           git add .
-          git commit -m "Update Allure Report for ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
+          git commit -m "Update Allure Report for ${{ env.TEST_OBJECT }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
           git pull --rebase origin gh-pages || true
           git push origin gh-pages
 
@@ -269,7 +267,8 @@ jobs:
     env:
       TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
-      CURRENT_REPO: FlySpotOrg/playwrightDemoProject
+      GITHUB_ORG: ${{ github.repository_owner }}
+      GITHUB_REPO: ${{ github.event.repository.name }}
       TEST_STATUS: ${{ needs.run-and-publish.outputs.test_status }}
 
     outputs:
@@ -280,7 +279,7 @@ jobs:
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.CURRENT_REPO }}
+          repository: ${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO }}
           ref: gh-pages
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -308,17 +307,17 @@ jobs:
 
       - name: Post deployment link
         run: |
-          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
           echo "✅ Report available at: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
         run: |
-          echo "report_url=https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
+          echo "report_url=https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
-          REPORT_URL="https://flyspotorg.github.io/playwrightDemoProject/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
 
