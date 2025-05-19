@@ -207,7 +207,7 @@ jobs:
             local path=$1
             echo "Updating latest report content for $path"
 
-            local latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
+            local latest_run_dir="${UNIQUE_RUN_ID}"
             local source_dir="$path/$latest_run_dir"
             local target_dir="$path/latest"
 
@@ -218,8 +218,15 @@ jobs:
 
             rm -rf "$target_dir" || true
             mkdir -p "$target_dir"
-            cp -a "$source_dir/"* "$target_dir/"
-            echo "Updated $path/latest from $source_dir"
+            shopt -s nullglob
+            files=("$source_dir"/*)
+            if [ ${#files[@]} -gt 0 ]; then
+              cp -a "$source_dir/"* "$target_dir/"
+              echo "Updated $path/latest from $source_dir"
+            else
+              echo "No files to copy from $source_dir"
+            fi
+            shopt -u nullglob
           }
 
           generate_history_index() {
