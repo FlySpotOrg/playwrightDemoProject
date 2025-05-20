@@ -1,0 +1,33 @@
+2025-05-20 03:53:21 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-05-20 03:53:22 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"Gm0ubIwNVmD56QQp"}
+  ← headers: {"date":"Tue, 20 May 2025 03:53:22 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=76iid2QM8EoqUa6uP3kfk11XGxodID04qXBI0OLEonQO0t2GENby1zc5%2BpFZGHlx3rNUwdLNmyi6uDVkYRBceO%2FI%2Fk5E7YzdcXcQj4WkAH%2BJ72TkFH25XU%2BD\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9428e2f73e7bd8a7-SJC","alt-svc":"h3=\":443\"; ma=86400"}
+2025-05-20 03:53:22 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=Gm0ubIwNVmD56QQp"}
+2025-05-20 03:53:22 info: [HTTP RESPONSE] GET /room/ → 200
+  ← params: undefined
+  ← data: {"rooms":[{"roomid":1,"roomName":"101","type":"Single","accessible":true,"image":"/images/room1.jpg","description":"Aenean porttitor mauris sit amet lacinia molestie. In posuere accumsan aliquet. Maecenas sit amet nisl massa. Interdum et malesuada fames ac ante.","features":["TV","WiFi","Safe"],"roomPrice":100},{"roomid":2,"roomName":"102","type":"Double","accessible":true,"image":"/images/room2.jpg","description":"Vestibulum sollicitudin, lectus ac mollis consequat, lorem orci ultrices tellus, eleifend euismod tortor dui egestas erat. Phasellus et ipsum nisl. ","features":["TV","Radio","Safe"],"roomPrice":150},{"roomid":3,"roomName":"103","type":"Suite","accessible":true,"image":"/images/room3.jpg","description":"Etiam metus metus, fringilla ac sagittis id, consequat vel neque. Nunc commodo quis nisl nec posuere. Etiam at accumsan ex. ","features":["Radio","WiFi","Safe"],"roomPrice":225}]}
+  ← headers: {"date":"Tue, 20 May 2025 03:53:22 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=XDpsnuGzRd9Kec4UEqhOMLn8e4yu3uOKal%2B2CeVUZr06M0zZ1Y1vads9%2Bcb4mws6l9oellFTm%2BzMNDfMFK7JTcGmVy2xXwyziqaV2y8nidOUXqiIg2ik2Woe\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9428e2fabc9feb36-SJC","alt-svc":"h3=\":443\"; ma=86400"}
+2025-05-20 03:53:22 info: [HTTP REQUEST] GET https://automationintesting.online/api/booking/?roomid=1
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=Gm0ubIwNVmD56QQp"}
+2025-05-20 03:53:23 info: [HTTP RESPONSE] GET /booking/?roomid=1 → 200
+  ← params: undefined
+  ← data: {"bookings":[{"bookingid":1,"roomid":1,"firstname":"James","lastname":"Dean","depositpaid":true,"bookingdates":{"checkin":"2026-02-01","checkout":"2026-02-05"}}]}
+  ← headers: {"date":"Tue, 20 May 2025 03:53:23 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=N22zgkiEWIGW1koUYz%2FnbwP2VMxHgJewIef1jRT2drsgJ7RuqXtrsw0wgX6cv8fuI3WBDJbREdYaqOO8jh2oZLZXtRurew3jk7Icjr8DfJvbwSB9cMyFmxaN\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9428e2fe0d67f98f-SJC","alt-svc":"h3=\":443\"; ma=86400"}
+2025-05-20 03:53:23 info: [HTTP REQUEST] DELETE https://automationintesting.online/api/booking/1
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=Gm0ubIwNVmD56QQp"}
+2025-05-20 03:53:23 info: [HTTP RESPONSE] DELETE /booking/1 → 200
+  ← params: undefined
+  ← data: {"success":true}
+  ← headers: {"date":"Tue, 20 May 2025 03:53:23 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=Z4Ijo7RTmLzWPP49mbO%2FIvlaF%2ByjHGsLuTSLycXkaewUvBc3NnIWZbhQBTQArTTK%2B57wabXGSeR0fGNbm%2FF49kErRpFNf6v439U1Dnhltf1p1848xIhPMw%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9428e3002d777aa9-SJC","alt-svc":"h3=\":443\"; ma=86400"}
+2025-05-20 03:53:23 info: User has been logged out.
