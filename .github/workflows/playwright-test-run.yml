@@ -182,7 +182,7 @@ jobs:
 
       - name: Generate Allure report
         run: |
-          REPORT_NAME="Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}"
+          REPORT_NAME="Playwright_Test_Run_[${{ env.TEST_OBJECT }}-${{ env.TEST_SCOPE }}]_#${{ env.UNIQUE_RUN_ID }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
