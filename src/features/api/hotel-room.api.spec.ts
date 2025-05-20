@@ -43,7 +43,7 @@ test.describe("Room API Tests", () => {
 
   test(
     "User should get a specific room by ID",
-    { tag: ["@regression", "@admin"] },
+    { tag: ["@regression", "@neevadmin"] },
     async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
       let createdRoom: Room, retrievedRoom: Room;
 
@@ -67,7 +67,7 @@ test.describe("Room API Tests", () => {
   );
 
   test("User should not get a non-existent room by ID",
-    { tag: ["@smoke", "@compas"] },
+    { tag: ["@smoke", "@compass"] },
      async ({ roomApiHelper: roomApi }) => {
     let response: AxiosResponse<Room>;
     let nonExistentId: number;
@@ -86,7 +86,7 @@ test.describe("Room API Tests", () => {
   });
 
   test("User should create a new room",
-    { tag: ["@smoke", "@admin"] },
+    { tag: ["@smoke", "@neevadmin"] },
     async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
     let roomParams: Room, createdRoom: Room;
 
@@ -118,7 +118,7 @@ test.describe("Room API Tests", () => {
   });
 
   test("Admin should update an existing room",
-    { tag: ["@smoke", "@admin-compas-integration"] }, async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
+    { tag: ["@smoke", "@neevadmin-compass-integration"] }, async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
     let createdRoom: Room, updatedRoom: Room, updatedParams: Room;
 
     await test.step("Given I have a room", async () => {
