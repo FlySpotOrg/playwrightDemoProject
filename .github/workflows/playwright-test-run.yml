@@ -21,23 +21,26 @@ on:
 
   workflow_dispatch:
     inputs:
-      test_scope:
-        description: "Select test scope"
-        type: choice
+      smoke:
+        description: "SCOPE: Smoke"
+        type: boolean
         required: false
-        default: "regression"
-        options:
-          - smoke
-          - regression
-      test_object:
-        description: "Select test object"
-        type: choice
+        default: false
+      regression:
+        description: "SCOPE: Regression"
+        type: boolean
         required: false
-        default: "admin"
-        options:
-          - admin
-          - compass
-          - admin-compass-integration
+        default: false
+      admin:
+        description: "APP: admin"
+        type: boolean
+        required: false
+        default: false
+      compas:
+        description: "APP: Compas"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -98,18 +101,39 @@ jobs:
           npx playwright install
           curl -sfS https://dotenvx.sh/install.sh | sh
 
-      - name: Run Playwright Tests (${{ env.TEST_OBJECT }}, ${{ env.TEST_SCOPE }})
-        continue-on-error: true
-        id: run_tests
+      - name: Build test scope/object names and grep string
+        id: build_names
         run: |
-          SCOPE_ARG="--grep @${{ env.TEST_SCOPE }}"
-          OBJECT_ARG="--grep @${{ env.TEST_OBJECT }}"
-          CMD="npx dotenvx run -- npx playwright test $SCOPE_ARG $OBJECT_ARG"
-          echo "Running: $CMD"
-          if ! $CMD; then
-            echo "test_status=failure" >> $GITHUB_OUTPUT
+          SCOPES=()
+          OBJECTS=()
+          [ "${{ github.event.inputs.smoke }}" = "true" ] && SCOPES+=("smoke")
+          [ "${{ github.event.inputs.regression }}" = "true" ] && SCOPES+=("regression")
+          [ "${{ github.event.inputs.admin }}" = "true" ] && OBJECTS+=("admin")
+          [ "${{ github.event.inputs.compas }}" = "true" ] && OBJECTS+=("compas")
+
+          SCOPE_FOLDER=$(IFS=- ; echo "${SCOPES[*]}")
+          OBJECT_FOLDER=$(IFS=- ; echo "${OBJECTS[*]}")
+
+          # Build grep string
+          SCOPE_GREP=$(IFS='|'; echo "${SCOPES[*]}")
+          OBJECT_GREP=$(IFS='|'; echo "${OBJECTS[*]}")
+          if [ -n "$SCOPE_GREP" ] && [ -n "$OBJECT_GREP" ]; then
+            GREP="(?=.*@${OBJECT_GREP})(?=.*@${SCOPE_GREP})"
           else
-            echo "test_status=success" >> $GITHUB_OUTPUT
+            GREP=""
+          fi
+
+          echo "scope_folder=$SCOPE_FOLDER" >> $GITHUB_OUTPUT
+          echo "object_folder=$OBJECT_FOLDER" >> $GITHUB_OUTPUT
+          echo "grep=$GREP" >> $GITHUB_OUTPUT
+
+      - name: Run Playwright Tests
+        run: |
+          if [ -n "${{ steps.build_names.outputs.grep }}" ]; then
+            npx dotenvx run -- npx playwright test --grep '${{ steps.build_names.outputs.grep }}'
+          else
+            echo "No test scope or object selected!"
+            exit 1
           fi
 
       - name: Execution Context Summary
@@ -222,7 +246,7 @@ jobs:
             rm -rf "$target_dir" || true
             mkdir -p "$target_dir"
             shopt -s nullglob
-            files=("$source_dir"/*)
+            files=("$source_dir/"*)
             if [ ${#files[@]} -gt 0 ]; then
               cp -a "$source_dir/"* "$target_dir/"
               echo "Updated $path/latest from $source_dir"
