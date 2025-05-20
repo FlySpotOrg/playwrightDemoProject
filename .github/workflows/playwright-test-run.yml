@@ -13,11 +13,11 @@ on:
         required: true
         type: string
         default: "regression"
-      test_object:
-        description: "Test object to run"
+      application:
+        description: "Application to run"
         required: true
         type: string
-        default: "admin"
+        default: "neevadmin"
 
   workflow_dispatch:
     inputs:
@@ -28,6 +28,7 @@ on:
         options:
           - neevadmin
           - compass
+          - neevadmin-compass-integration
         default: neevadmin
       test_scope:
         description: "Test scope"
@@ -73,7 +74,7 @@ permissions:
 
 jobs:
   run-and-publish:
-    name: Run Tests [${{ inputs.test_object }} | ${{ inputs.test_scope }}]
+    name: Run Tests [${{ inputs.application }} | ${{ inputs.test_scope }}]
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
@@ -84,7 +85,7 @@ jobs:
     env:
       UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
-      TEST_OBJECT: ${{ inputs.test_object || github.event.client_payload.test_object || github.event.inputs.test_object || 'admin' }}
+      TEST_OBJECT: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
