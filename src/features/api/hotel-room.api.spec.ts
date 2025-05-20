@@ -66,7 +66,9 @@ test.describe("Room API Tests", () => {
     }
   );
 
-  test("User should not get a non-existent room by ID", async ({ roomApiHelper: roomApi }) => {
+  test("User should not get a non-existent room by ID",
+    { tag: ["@smoke", "@compas"] },
+     async ({ roomApiHelper: roomApi }) => {
     let response: AxiosResponse<Room>;
     let nonExistentId: number;
 
@@ -83,7 +85,9 @@ test.describe("Room API Tests", () => {
     });
   });
 
-  test("User should create a new room", async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
+  test("User should create a new room",
+    { tag: ["@smoke", "@admin"] },
+    async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
     let roomParams: Room, createdRoom: Room;
 
     await test.step("Given I have a room parameters", async () => {
@@ -113,7 +117,8 @@ test.describe("Room API Tests", () => {
     registerCleanup({ type: "room", data: createdRoom });
   });
 
-  test("Admin should update an existing room", async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
+  test("Admin should update an existing room",
+    { tag: ["@smoke", "@admin-compas-integration"] }, async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
     let createdRoom: Room, updatedRoom: Room, updatedParams: Room;
 
     await test.step("Given I have a room", async () => {
