@@ -177,8 +177,10 @@ jobs:
 
       - name: Add Allure Environment Info
         run: |
+          LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/latest/"
           echo "Test_Object: ${{ env.TEST_OBJECT }}" > allure-results/environment.properties
           echo "Test_Scope: ${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
+          echo "Latest_Report_URL: $LATEST_URL" >> allure-results/environment.properties
 
       - name: Generate Allure report
         run: |
@@ -191,15 +193,6 @@ jobs:
             exit 1
           }
           echo "Allure report generated successfully"
-
-      - name: Add link to latest report in Allure Overview
-        run: |
-          SUMMARY_FILE="gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/widgets/summary.json"
-          LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/latest/"
-          if [ -f "$SUMMARY_FILE" ]; then
-            jq --arg desc "<a href=\"$LATEST_URL\" target=\"_blank\">🔗 Latest Report for this test object/scope</a>" \
-              '.reportDescription = $desc' "$SUMMARY_FILE" > tmp.$$.json && mv tmp.$$.json "$SUMMARY_FILE"
-          fi
 
       - name: Set up git credentials
         run: |
