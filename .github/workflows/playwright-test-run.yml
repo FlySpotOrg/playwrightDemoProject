@@ -311,21 +311,36 @@ jobs:
             return 0
           }
 
-          for application in $(ls -d */ | sed 's#/##' | grep -v '^site$'); do
-            for env in $(ls -d "$application"/*/ 2>/dev/null | sed 's#.*/##'); do
-              for scope in $(ls -d "$application/$env"/*/ 2>/dev/null | sed 's#.*/##'); do
-                if [ -d "$application/$env/$scope" ]; then
-                  update_latest "$application/$env/$scope"
-                  # generate_history_index "$application/$env/$scope"  # Removed
-                fi
-              done
-            done
-          done
+      - name: Update latest folder
+        run: |
+          set -e
+          cd gh-pages
+          path="${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}"
+          latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
+          source_dir="$path/$latest_run_dir"
+          target_dir="$path/latest"
+          
+          if [ ! -d "$source_dir" ]; then
+            echo "Source directory $source_dir does not exist. Skipping."
+            exit 0
+          fi
+      
+          rm -rf "$target_dir" || true
+          mkdir -p "$target_dir"
+          shopt -s nullglob
+          files=("$source_dir/"*)
+          if [ ${#files[@]} -gt 0 ]; then
+            cp -a "$source_dir/"* "$target_dir/"
+            echo "Updated $path/latest from $source_dir"
+          else
+            echo "No files to copy from $source_dir"
+          fi
+          shopt -u nullglob
 
-          git add .
-          git commit -m "Update Allure Report for ${{ env.APPLICATION }} ${{ env.ENV }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
-          git pull --rebase origin gh-pages || true
-          git push origin gh-pages
+            git add .
+            git commit -m "Update Allure Report for ${{ env.APPLICATION }} ${{ env.ENV }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
+            git pull --rebase origin gh-pages || true
+            git push origin gh-pages
 
       - name: Fail job if tests failed
         if: steps.run_tests.outputs.test_status == 'failure'
