@@ -11,8 +11,6 @@ export default class ApiClient {
   protected axios_instance: AxiosInstance;
 
   public constructor() {
-    setBaseURL("neevadmin");
-    console.log("CURRENT BASE URL: ", config.use.baseURL);
     const baseURL = environments[process.env.ENV].applications.neevadmin.baseURL.concat("/api");
     const axiosConfig = {
       baseURL: baseURL,
