@@ -78,14 +78,15 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
-      test_object: ${{ env.TEST_OBJECT }}
+      application: ${{ env.APPLICATION }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
       test_status: ${{ steps.run_tests.outputs.test_status }}
 
     env:
       UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
-      TEST_OBJECT: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
+      APPLICATION: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
+      ENV: ${{ inputs.env || github.event.client_payload.env || github.event.inputs.env || 'uat' }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
@@ -209,10 +210,10 @@ jobs:
           set -e
           echo "Preparing Allure Report..."
 
-          LATEST_RUN=$(ls -d gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
+          LATEST_RUN=$(ls -d gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
 
-          mkdir -p "gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
+          mkdir -p "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
 
           mkdir -p "allure-results"
           if [ -n "$LATEST_RUN" ]; then
@@ -233,27 +234,27 @@ jobs:
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "buildOrder": "${{ github.run_number }}",
-            "buildName": "Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
+            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
             "executor": "GitHub Actions"
           }
           EOF
 
       - name: Add Allure Environment Info
         run: |
-          LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/latest/"
-          echo "Test_Object: ${{ env.TEST_OBJECT }}" > allure-results/environment.properties
+          LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+          echo "Application: ${{ env.APPLICATION }}" > allure-results/environment.properties
           echo "Test_Scope: ${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
           echo "Latest_Report_URL: $LATEST_URL" >> allure-results/environment.properties
 
       - name: Generate Allure report
         run: |
-          REPORT_NAME="${{ env.TEST_OBJECT }}-[${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
+          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
-            --output "gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
+            --output "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
             echo "Failed to generate Allure report"
             exit 1
           }
@@ -302,17 +303,19 @@ jobs:
             return 0
           }
 
-          for object in admin compass admin-compass-integration; do
-            for scope in regression smoke; do
-              if [ -d "$object/$scope" ]; then
-                update_latest "$object/$scope"
-                # generate_history_index "$object/$scope"  # Removed
-              fi
+          for application in admin compass admin-compass-integration; do
+            for env in uat dev test-automation-1; do
+              for scope in regression smoke; do
+                if [ -d "$application/$env/$scope" ]; then
+                  update_latest "$application/$env/$scope"
+                  # generate_history_index "$application/$env/$scope"  # Removed
+                fi
+              done
             done
           done
 
           git add .
-          git commit -m "Update Allure Report for ${{ env.TEST_OBJECT }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
+          git commit -m "Update Allure Report for ${{ env.APPLICATION }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
           git pull --rebase origin gh-pages || true
           git push origin gh-pages
 
@@ -324,8 +327,8 @@ jobs:
 
       - name: Patch Allure Report Title
         run: |
-          SUMMARY_FILE="gh-pages/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/widgets/summary.json"
-          TITLE="Playwright Test Run [${{ env.TEST_OBJECT }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}"
+          SUMMARY_FILE="gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/widgets/summary.json"
+          TITLE="Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}"
           if [ -f "$SUMMARY_FILE" ]; then
             jq --arg title "$TITLE" '.reportName = $title' "$SUMMARY_FILE" > tmp.$$.json && mv tmp.$$.json "$SUMMARY_FILE"
           fi
@@ -346,7 +349,8 @@ jobs:
       id-token: write
 
     env:
-      TEST_OBJECT: ${{ needs.run-and-publish.outputs.test_object }}
+      APPLICATION: ${{ needs.run-and-publish.outputs.application }}
+      ENV: ${{ github.event.inputs.env || github.event.client_payload.env || 'uat' }}
       TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       GITHUB_ORG: ${{ github.repository_owner }}
@@ -369,13 +373,15 @@ jobs:
       - name: Build site folder
         run: |
           mkdir -p site
-          for object in admin compass admin-compass-integration; do
-            if [ -d "$object" ]; then
-              echo "Copying $object directory to site/"
-              cp -a "$object" site/
-            else
-              echo "› No $object folder yet, skipping"
-            fi
+          for application in admin compass admin-compass-integration; do
+            for env in uat dev test-automation-1; do
+              if [ -d "$application/$env" ]; then
+                echo "Copying $application/$env directory to site/"
+                cp -a "$application/$env" site/$application/
+              else
+                echo "› No $application/$env folder yet, skipping"
+              fi
+            done
           done
 
       - name: Upload Pages Artifact
@@ -389,17 +395,17 @@ jobs:
 
       - name: Post deployment link
         run: |
-          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
           echo "✅ Report available at: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
         run: |
-          echo "report_url=https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
+          echo "report_url=https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
-          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.TEST_OBJECT }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
 
