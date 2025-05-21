@@ -261,6 +261,13 @@ jobs:
           }
           echo "Allure report generated successfully"
 
+      - name: Debug gh-pages content
+        run: |
+          echo "Contents of gh-pages after generation:"
+          find gh-pages -maxdepth 5 | sed 's/^/  /'
+          ls -ld gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/*
+          echo "LATEST_RUN: $LATEST_RUN"
+
       - name: Set up git credentials
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
