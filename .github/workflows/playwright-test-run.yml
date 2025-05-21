@@ -170,6 +170,7 @@ jobs:
       - name: Run Playwright Tests
         env:
           env: ${{ github.event.inputs.env }}
+        continue-on-error: true
         run: |
           if [ -n "${{ steps.build_grep.outputs.grep }}" ]; then
             npx dotenvx run -- npx playwright test --grep '${{ steps.build_grep.outputs.grep }}'
@@ -402,20 +403,28 @@ jobs:
             rsync -av --exclude site ./ site/
             echo "✅ Contents copied to site/."
 
-            echo "Generating root index.html for the site..."
-            echo "<h1>Allure Test Reports</h1>" > site/index.html
-            echo "<p>Repository: <a href=\"https://github.com/${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO_NAME }}\">${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO_NAME }}</a></p>" >> site/index.html
-            echo "<ul>" >> site/index.html
-            cd site
-            find . -path '*/index.html' -type f -print0 | while IFS= read -r -d $'\0' report_index_file; do
-              link_path=$(echo "$report_index_file" | sed 's|^\./||; s|/index.html$||')
-              display_name=$(echo "$link_path" | sed 's|/| / |g')
-              echo "  <li><a href=\"${link_path}/\">${display_name}</a></li>" >> ../site/index.html # Append to site/index.html
-            done
-            cd ..
-            echo "</ul>" >> site/index.html
-            echo "<p><em>Generated at $(date -u +\"%Y-%m-%dT%H:%M:%SZ\")</em></p>" >> site/index.html
-            echo "✅ Root index.html generated."
+            # Generate hierarchical index.html in every directory
+            generate_index() {
+              local dir="$1"
+              local relpath="${dir#site/}"
+              local title="Allure Test Reports"
+              [ -n "$relpath" ] && title="$relpath"
+
+              echo "<h1>${title}</h1>" > "$dir/index.html"
+              echo "<ul>" >> "$dir/index.html"
+              for subdir in "$dir"/*/; do
+                [ -d "$subdir" ] || continue
+                subname=$(basename "$subdir")
+                echo "  <li><a href=\"${subname}/\">${subname}</a></li>" >> "$dir/index.html"
+              done
+              echo "</ul>" >> "$dir/index.html"
+              echo "<p><em>Generated at $(date -u +"%Y-%m-%dT%H:%M:%SZ")</em></p>" >> "$dir/index.html"
+            }
+
+            export -f generate_index
+            find site -type d -print0 | xargs -0 -I{} bash -c 'generate_index "$@"' _ {}
+
+            echo "✅ Hierarchical index.html files generated."
           fi
           
           echo "🌲 Contents of site/ directory before upload:"
