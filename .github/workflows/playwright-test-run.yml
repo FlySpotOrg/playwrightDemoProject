@@ -417,9 +417,16 @@ jobs:
               [ -f "$dir/index.html" ] && return
               local relpath="${dir#site/}"
               local title="Allure Test Reports"
+              local breadcrumbs="Allure Test Reports"
               if [ -n "$relpath" ]; then
                 relpath="${relpath%/}"
-                title="Allure Test Reports: $relpath"
+                IFS='/' read -ra parts <<< "$relpath"
+                local path_accum=""
+                for i in "${!parts[@]}"; do
+                  path_accum="$path_accum/${parts[$i]}"
+                  breadcrumbs="$breadcrumbs: <a href=\"${path_accum}/\">${parts[$i]}</a>"
+                done
+                title="$breadcrumbs"
               fi
 
               echo "<h1>${title}</h1>" > "$dir/index.html"
