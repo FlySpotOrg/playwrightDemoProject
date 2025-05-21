@@ -2,7 +2,6 @@ import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import axios from "axios";
 import { logger } from "../utils/logger";
 import { Credentials } from "../types/types";
-import config, { setBaseURL } from "playwright.config";
 import { environments } from "src/config/auth.config";
 
 export default class ApiClient {

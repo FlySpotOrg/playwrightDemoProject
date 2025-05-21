@@ -373,11 +373,12 @@ jobs:
       - name: Build site folder
         run: |
           mkdir -p site
-          for application in admin compass admin-compass-integration; do
-            for env in uat dev test-automation-1; do
+          for application in $(ls -d */ | sed 's#/##' | grep -v '^site$'); do
+            for env in $(ls -d "$application"/*/ 2>/dev/null | sed 's#.*/##'); do
               if [ -d "$application/$env" ]; then
                 echo "Copying $application/$env directory to site/"
-                cp -a "$application/$env" site/$application/
+                mkdir -p "site/$application"
+                cp -a "$application/$env" "site/$application/"
               else
                 echo "› No $application/$env folder yet, skipping"
               fi
