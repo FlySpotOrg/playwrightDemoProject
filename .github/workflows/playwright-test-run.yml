@@ -394,7 +394,6 @@ jobs:
 
       - name: Build site folder
         run: |
-          cd gh-pages
           mkdir -p site
           for application in $(ls -d */ | sed 's#/##' | grep -v '^site$'); do
             for env in $(ls -d "$application"/*/ 2>/dev/null | sed 's#.*/##'); do
