@@ -244,11 +244,20 @@ jobs:
 
       - name: Add Allure Environment Info
         run: |
-          LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
-          echo "Application: ${{ env.APPLICATION }}" > allure-results/environment.properties
-          echo "Env: ${{ env.ENV }}" > allure-results/environment.properties
-          echo "Test_Scope: ${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
-          echo "Latest_Report_URL: $LATEST_URL" >> allure-results/environment.properties
+          mkdir -p allure-results
+          {
+            echo "Latest_Report_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+            echo "Application: ${{ env.APPLICATION }}"
+            echo "Test_Scope: ${{ env.TEST_SCOPE }}"
+            echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
+            echo "Env: ${{ env.ENV }}"
+            echo "Include_Tags: ${{ github.event.inputs.include_tags || 'none' }}"
+            echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || 'none' }}"
+            echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
+            echo "GitHub_Run_ID: ${{ github.run_id }}"
+            echo "GitHub_Actor: ${{ github.actor }}"
+            echo "GitHub_Event: ${{ github.event_name }}"
+          } > allure-results/environment.properties
 
       - name: Generate Allure report
         run: |
@@ -408,7 +417,10 @@ jobs:
               [ -f "$dir/index.html" ] && return
               local relpath="${dir#site/}"
               local title="Allure Test Reports"
-              [ -n "$relpath" ] && title="$relpath"
+              if [ -n "$relpath" ]; then
+                relpath="${relpath%/}"
+                title="Allure Test Reports: $relpath"
+              fi
 
               echo "<h1>${title}</h1>" > "$dir/index.html"
               echo "<ul>" >> "$dir/index.html"
@@ -418,7 +430,7 @@ jobs:
                 echo "  <li><a href=\"${subname}/\">${subname}</a></li>" >> "$dir/index.html"
               done
               echo "</ul>" >> "$dir/index.html"
-              echo "<p><em>Generated at $(date -u +"%Y-%m-%dT%H:%M:%SZ")</em></p>" >> "$dir/index.html"
+              echo "<p><em>Generated at $(date -u +\"%Y-%m-%dT%H:%M:%SZ\")</em></p>" >> "$dir/index.html"
             }
 
             export -f generate_index
