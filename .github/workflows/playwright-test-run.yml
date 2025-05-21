@@ -408,6 +408,14 @@ jobs:
             done
           done
 
+      - name: Copy latest folder into site before deployment
+        run: |
+          mkdir -p site/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}
+          cp -a "${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest" \
+            "site/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/"
+          echo "Copied latest to site/"
+          find site -type f | sed 's/^/  /'
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
