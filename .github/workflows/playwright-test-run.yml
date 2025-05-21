@@ -403,9 +403,9 @@ jobs:
             rsync -av --exclude site ./ site/
             echo "✅ Contents copied to site/."
 
-            # Generate hierarchical index.html in every directory
             generate_index() {
               local dir="$1"
+              [ -f "$dir/index.html" ] && return
               local relpath="${dir#site/}"
               local title="Allure Test Reports"
               [ -n "$relpath" ] && title="$relpath"
