@@ -399,9 +399,7 @@ jobs:
             echo "⚠️ gh-pages checkout is empty. The 'site' directory will be empty."
             echo "<h1>No reports found</h1><p>The gh-pages branch appears to be empty.</p>" > site/index.html
           else
-            shopt -s dotglob
-            cp -a ./* site/
-            shopt -u dotglob
+            rsync -av --exclude site ./ site/
             echo "✅ Contents copied to site/."
 
             echo "Generating root index.html for the site..."
@@ -416,7 +414,7 @@ jobs:
             done
             cd ..
             echo "</ul>" >> site/index.html
-            echo "<p><em>Generated at $(date -u +"%Y-%m-%dT%H:%M:%SZ")</em></p>" >> site/index.html
+            echo "<p><em>Generated at $(date -u +\"%Y-%m-%dT%H:%M:%SZ\")</em></p>" >> site/index.html
             echo "✅ Root index.html generated."
           fi
           
