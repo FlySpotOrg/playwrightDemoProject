@@ -251,8 +251,8 @@ jobs:
             echo "Test_Scope: ${{ env.TEST_SCOPE }}"
             echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
             echo "Env: ${{ env.ENV }}"
-            echo "Include_Tags: ${{ github.event.inputs.include_tags || 'none' }}"
-            echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || 'none' }}"
+            echo "Include_Tags: ${{ github.event.inputs.include_tags || '' }}"
+            echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || '' }}"
             echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
             echo "GitHub_Run_ID: ${{ github.run_id }}"
             echo "GitHub_Actor: ${{ github.actor }}"
@@ -416,18 +416,17 @@ jobs:
               local dir="$1"
               [ -f "$dir/index.html" ] && return
               local relpath="${dir#site/}"
-              local title="Allure Test Reports"
-              local breadcrumbs="Allure Test Reports"
+              local breadcrumbs="<a href=\"/\">Allure Test Reports</a>"
               if [ -n "$relpath" ]; then
                 relpath="${relpath%/}"
                 IFS='/' read -ra parts <<< "$relpath"
                 local path_accum=""
                 for i in "${!parts[@]}"; do
                   path_accum="$path_accum/${parts[$i]}"
-                  breadcrumbs="$breadcrumbs: <a href=\"${path_accum}/\">${parts[$i]}</a>"
+                  breadcrumbs="$breadcrumbs: <a href=\"$path_accum/\">${parts[$i]}</a>"
                 done
-                title="$breadcrumbs"
               fi
+              local title="$breadcrumbs"
 
               echo "<h1>${title}</h1>" > "$dir/index.html"
               echo "<ul>" >> "$dir/index.html"
