@@ -68,315 +68,380 @@ on:
         default: ""
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write # Needed to push to gh-pages branch and for actions/checkout with persist-credentials
+  pages: write    # Needed for actions/deploy-pages
+  id-token: write # Needed for actions/deploy-pages (OIDC)
 
 jobs:
   run-and-publish:
-    name: Run Tests [${{ inputs.application }} | ${{ inputs.test_scope }}]
+    name: Run Tests & Publish Report [${{ inputs.application }} | ${{ inputs.test_scope }}]
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
       application: ${{ env.APPLICATION }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
-      test_status: ${{ steps.run_tests.outputs.test_status }}
+      test_status: ${{ steps.run_tests.outputs.test_status }} # Ensure run_tests step has an id and outputs test_status
 
     env:
       UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
-      TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
-      APPLICATION: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
-      ENV: ${{ inputs.env || github.event.client_payload.env || github.event.inputs.env || 'uat' }}
-      CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
+      # Resolve inputs, preferring direct inputs over event.inputs for clarity
+      TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope || 'regression' }}
+      APPLICATION: ${{ inputs.application || github.event.inputs.application || 'neevadmin' }}
+      ENV_NAME: ${{ inputs.env || github.event.inputs.env || 'uat' }} # Renamed to avoid conflict with 'env' context for scripts
+      CHECKOUT_REF: ${{ inputs.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout code (main branch for tests)
         uses: actions/checkout@v4
         with:
           repository: ${{ env.CURRENT_REPO }}
           fetch-depth: 0
-          persist-credentials: true
+          persist-credentials: true # Important for subsequent git operations if needed by scripts
           ref: ${{ env.CHECKOUT_REF }}
 
       - name: Rename current run with dispatch ID
         if: env.DISPATCH_ID != 'none'
+        env: # GITHUB_TOKEN is automatically available
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Renaming current run with DISPATCH_ID=${{ env.DISPATCH_ID }}"
-          RUN_ID=$(gh run list --workflow="Playwright Test Runner" --limit 10 --json databaseId,headBranch,event | jq -r 'map(select(.event=="repository_dispatch" and .headBranch=="${{ env.CHECKOUT_REF }}")) | sort_by(.databaseId) | reverse | .[0].databaseId')
+          # Ensure gh CLI is available or use curl directly if preferred
+          # The original jq query might need adjustment based on actual gh run list output and event types
+          RUN_ID=$(gh run list --workflow="${{ github.workflow }}" --limit 10 --json databaseId,headBranch,event --jq 'map(select(.event=="repository_dispatch" and .headBranch=="${{ env.CHECKOUT_REF }}")) | sort_by(.databaseId) | reverse | .[0].databaseId')
           echo "Resolved RUN_ID: $RUN_ID"
           if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
-            curl -X PATCH \
+            curl -L -X PATCH \
               -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ env.CURRENT_REPO }}/actions/runs/$RUN_ID" \
               -d "{\"name\":\"Playwright Test Runner (${{ env.DISPATCH_ID }})\"}"
           else
-            echo "⚠️ Could not resolve run ID for renaming"
+            echo "⚠️ Could not resolve run ID for renaming via dispatch event."
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # Use latest major version
         with:
           node-version: "18"
 
       - name: Install dependencies and Playwright
         run: |
           npm ci
-          npx playwright install
-          curl -sfS https://dotenvx.sh/install.sh | sh
+          npx playwright install --with-deps # --with-deps ensures browsers are installed
+          # Consider if dotenvx is still needed or if secrets/env vars are sufficient
+          # curl -sfS https://dotenvx.sh/install.sh | sh
 
       - name: Build Playwright grep expression
         id: build_grep
         run: |
-          # Application, Scope, Type
           INCLUDE=()
-          [ -n "${{ github.event.inputs.application }}" ] && INCLUDE+=("@${{ github.event.inputs.application }}")
-          [ -n "${{ github.event.inputs.test_scope }}" ] && INCLUDE+=("@${{ github.event.inputs.test_scope }}")
-          if [ "${{ github.event.inputs.test_type }}" != "ALL" ]; then
-            INCLUDE+=("@${{ github.event.inputs.test_type }}")
+          # Ensure inputs are correctly referenced, especially for workflow_call vs workflow_dispatch
+          APP_INPUT="${{ inputs.application || github.event.inputs.application }}"
+          SCOPE_INPUT="${{ inputs.test_scope || github.event.inputs.test_scope }}"
+          TYPE_INPUT="${{ github.event.inputs.test_type }}" # This is only from workflow_dispatch
+          INCLUDE_TAGS_INPUT="${{ github.event.inputs.include_tags }}"
+          EXCLUDE_TAGS_INPUT="${{ github.event.inputs.exclude_tags }}"
+
+          [ -n "$APP_INPUT" ] && INCLUDE+=("@$APP_INPUT")
+          [ -n "$SCOPE_INPUT" ] && INCLUDE+=("@$SCOPE_INPUT")
+          if [ -n "$TYPE_INPUT" ] && [ "$TYPE_INPUT" != "ALL" ]; then
+            INCLUDE+=("@$TYPE_INPUT")
           fi
 
-          # Include tags
-          if [ -n "${{ github.event.inputs.include_tags }}" ]; then
-            IFS=',' read -ra TAGS <<< "${{ github.event.inputs.include_tags }}"
+          if [ -n "$INCLUDE_TAGS_INPUT" ]; then
+            IFS=',' read -ra TAGS <<< "$INCLUDE_TAGS_INPUT"
             for tag in "${TAGS[@]}"; do
               tag=$(echo "$tag" | xargs) # trim
               [ -n "$tag" ] && INCLUDE+=("$tag")
             done
           fi
 
-          # Build include grep
           GREP_INCLUDE=""
           for tag in "${INCLUDE[@]}"; do
             GREP_INCLUDE="$GREP_INCLUDE(?=.*$tag)"
           done
 
-          # Exclude tags
           GREP_EXCLUDE=""
-          if [ -n "${{ github.event.inputs.exclude_tags }}" ]; then
-            IFS=',' read -ra EXCLUDE <<< "${{ github.event.inputs.exclude_tags }}"
+          if [ -n "$EXCLUDE_TAGS_INPUT" ]; then
+            IFS=',' read -ra EXCLUDE <<< "$EXCLUDE_TAGS_INPUT"
             for tag in "${EXCLUDE[@]}"; do
               tag=$(echo "$tag" | xargs)
               [ -n "$tag" ] && GREP_EXCLUDE="$GREP_EXCLUDE(?!.*$tag)"
             done
           fi
 
-          # Final grep
           FINAL_GREP="$GREP_INCLUDE$GREP_EXCLUDE"
+          echo "Final grep expression: '$FINAL_GREP'"
           echo "grep=$FINAL_GREP" >> $GITHUB_OUTPUT
 
       - name: Run Playwright Tests
+        id: run_tests # Give this step an ID to reference its outputs
         env:
-          env: ${{ github.event.inputs.env }}
+          # Pass the resolved environment name to the test execution
+          # The original 'env: ${{ github.event.inputs.env }}' might be problematic if 'env' is a reserved keyword or conflicts
+          TARGET_ENV: ${{ env.ENV_NAME }}
+          # Ensure Playwright config or tests can use TARGET_ENV
         run: |
+          TEST_COMMAND="npx playwright test"
           if [ -n "${{ steps.build_grep.outputs.grep }}" ]; then
-            npx dotenvx run -- npx playwright test --grep '${{ steps.build_grep.outputs.grep }}'
+            TEST_COMMAND="$TEST_COMMAND --grep '${{ steps.build_grep.outputs.grep }}'"
           else
-            echo "No grep expression built!"
-            exit 1
+            echo "No grep expression built, running all tests for the project."
+            # Or exit 1 if grep is mandatory:
+            # echo "Error: No grep expression built and it's required!"
+            # exit 1
+          fi
+          
+          echo "Executing: $TEST_COMMAND"
+          # Run tests and capture status
+          if $TEST_COMMAND; then
+            echo "test_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "test_status=failure" >> $GITHUB_OUTPUT
+            # Optionally, re-throw error to fail the step if not already failing
+            # exit 1 # playwright test command should exit with non-zero on failure
           fi
 
       - name: Execution Context Summary
+        if: always()
         run: |
           echo "### 🔍 Trigger Context" >> $GITHUB_STEP_SUMMARY
           echo "- Event: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Run ID: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }})" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "- Triggered manually" >> $GITHUB_STEP_SUMMARY
+            echo "- Triggered manually by: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Application: \`${{ inputs.application || github.event.inputs.application }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Test Scope: \`${{ inputs.test_scope || github.event.inputs.test_scope }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Test Type: \`${{ github.event.inputs.test_type }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Environment: \`${{ inputs.env || github.event.inputs.env }}\`" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            echo "- Called from another workflow" >> $GITHUB_STEP_SUMMARY
+            echo "- Application: \`${{ inputs.application }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Test Scope: \`${{ inputs.test_scope }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Environment: \`${{ inputs.env }}\`" >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ github.event_name }}" == "push" ]]; then
             echo "- Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
-          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          elif [[ "${{ github.event_name }}" == "pull_request" ]];then
             echo "- PR: [#${{ github.event.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.number }})" >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
             echo "- External Dispatch ID: \`${{ env.DISPATCH_ID }}\`" >> $GITHUB_STEP_SUMMARY
           fi
+          echo "- Test Status: \`${{ steps.run_tests.outputs.test_status || 'Unknown' }}\`" >> $GITHUB_STEP_SUMMARY
 
-      - name: Checkout gh-pages branch
+
+      - name: Checkout gh-pages branch for report
         if: always()
         uses: actions/checkout@v4
         with:
           repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
-          path: gh-pages
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: gh-pages # Checkout into a specific subdirectory
+          fetch-depth: 0 # Fetch all history for rebase and history copy
+          token: ${{ secrets.GITHUB_TOKEN }} # Token for potential push if done from here (though we do it later)
           persist-credentials: true
 
-      - name: Prepare Allure Report
+      - name: Prepare Allure Report History
         if: always()
+        working-directory: ./gh-pages # Ensure context is within the gh-pages checkout
         run: |
           set -e
-          echo "Preparing Allure Report..."
-
-          LATEST_RUN=$(ls -d gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
-          echo "Latest run found: $LATEST_RUN"
-
-          mkdir -p "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
-
-          mkdir -p "allure-results"
-          if [ -n "$LATEST_RUN" ]; then
-            if [ -d "$LATEST_RUN/history" ]; then
-              echo "Copying history from $LATEST_RUN"
-              cp -rv "$LATEST_RUN/history" "allure-results/"
-            else
-              echo "No history directory found in $LATEST_RUN"
-            fi
+          echo "Preparing Allure Report History..."
+          REPORT_BASE_PATH="${{ env.APPLICATION }}/${{ env.ENV_NAME }}/${{ env.TEST_SCOPE }}"
+          mkdir -p allure-results # This is where Playwright outputs its raw results by default
+          
+          LATEST_RUN_HISTORY_DIR_GH_PAGES="$REPORT_BASE_PATH/latest/history"
+          
+          echo "Looking for history in: $LATEST_RUN_HISTORY_DIR_GH_PAGES (relative to gh-pages checkout)"
+          if [ -d "$LATEST_RUN_HISTORY_DIR_GH_PAGES" ]; then
+            echo "Copying history from $LATEST_RUN_HISTORY_DIR_GH_PAGES to local allure-results/"
+            # Ensure allure-results exists in the main workspace, not in gh-pages subdir for this copy
+            # Allure CLI reads from ./allure-results by default
+            cp -rv "$LATEST_RUN_HISTORY_DIR_GH_PAGES" "../allure-results/" # Copy to workspace allure-results
+          else
+            echo "No history directory found in $LATEST_RUN_HISTORY_DIR_GH_PAGES. A new history will be generated."
+            # Ensure the allure-results directory (in workspace) is clean or exists for new history
+            mkdir -p "../allure-results/history"
           fi
 
       - name: Add Allure Executor Info
+        if: always()
         run: |
-          mkdir -p allure-results
+          mkdir -p allure-results # Create in workspace root
           cat <<EOF > allure-results/executor.json
           {
             "name": "GitHub Actions",
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "buildOrder": "${{ github.run_number }}",
-            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
+            "buildOrder": "${{ env.UNIQUE_RUN_ID }}",
+            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV_NAME }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
-            "executor": "GitHub Actions"
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV_NAME }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
+            "executorInfo": { "branch": "${{ env.CHECKOUT_REF }}" }
           }
           EOF
 
       - name: Add Allure Environment Info
-        run: |
-          LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
-          echo "Application: ${{ env.APPLICATION }}" > allure-results/environment.properties
-          echo "Env: ${{ env.ENV }}" > allure-results/environment.properties
-          echo "Test_Scope: ${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
-          echo "Latest_Report_URL: $LATEST_URL" >> allure-results/environment.properties
-
-      - name: Generate Allure report
-        run: |
-          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
-          echo "Report name will be: $REPORT_NAME"
-          npm run allure:generate -- \
-            --report-name "$REPORT_NAME" \
-            --output "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
-            echo "Failed to generate Allure report"
-            exit 1
-          }
-          echo "Allure report generated successfully"
-
-      - name: Debug gh-pages content
-        run: |
-          cd gh-pages
-          echo "Contents of gh-pages:"
-          find . | sed 's/^/  /'
-
-      - name: Set up git credentials
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.CURRENT_REPO }}.git
-
-      - name: Commit and Push Allure Report
         if: always()
         run: |
-          set -e
-          cd gh-pages
+          mkdir -p allure-results # Create in workspace root
+          LATEST_URL_PATH="${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV_NAME }}/${{ env.TEST_SCOPE }}/latest/"
+          # Ensure correct property file writing (overwrite vs append)
+          echo "Application=${{ env.APPLICATION }}" > allure-results/environment.properties
+          echo "Environment=${{ env.ENV_NAME }}" >> allure-results/environment.properties
+          echo "Test_Scope=${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
+          echo "Run_ID=${{ env.UNIQUE_RUN_ID }}" >> allure-results/environment.properties
+          echo "Trigger_Branch=${{ env.CHECKOUT_REF }}" >> allure-results/environment.properties
+          echo "Latest_Report_URL=https://${{ github.repository_owner }}.github.io/${LATEST_URL_PATH}" >> allure-results/environment.properties
 
-          update_latest() {
-            local path=$1
-            echo "Updating latest report content for $path"
-
-            local latest_run_dir="${UNIQUE_RUN_ID}"
-            local source_dir="$path/$latest_run_dir"
-            local target_dir="$path/latest"
-
-            if [ ! -d "$source_dir" ]; then
-              echo "Source directory $source_dir does not exist. Skipping."
-              return 0
-            fi
-
-            rm -rf "$target_dir" || true
-            mkdir -p "$target_dir"
-            shopt -s nullglob
-            files=("$source_dir/"*)
-            if [ ${#files[@]} -gt 0 ]; then
-              cp -a "$source_dir/"* "$target_dir/"
-              echo "Updated $path/latest from $source_dir"
-            else
-              echo "No files to copy from $source_dir"
-            fi
-            shopt -u nullglob
-          }
-
-          generate_history_index() {
-            # No-op: history.md generation removed as per user request
-            return 0
-          }
-
-      - name: Update latest folder
+      - name: Generate Allure report
+        if: always()
         run: |
-          set -e
-          cd gh-pages
-          path="${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}"
-          latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
-          source_dir="$path/$latest_run_dir"
-          target_dir="$path/latest"
+          REPORT_OUTPUT_DIR="gh-pages/${{ env.APPLICATION }}/${{ env.ENV_NAME }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
+          echo "Generating Allure report into: $REPORT_OUTPUT_DIR"
+          # Ensure the output directory exists before generating
+          mkdir -p "$REPORT_OUTPUT_DIR"
           
-          if [ ! -d "$source_dir" ]; then
-            echo "Source directory $source_dir does not exist. Skipping."
-            exit 0
-          fi
-      
-          rm -rf "$target_dir" || true
-          mkdir -p "$target_dir"
-          shopt -s nullglob
-          files=("$source_dir/"*)
-          if [ ${#files[@]} -gt 0 ]; then
-            cp -a "$source_dir/"* "$target_dir/"
-            echo "Updated $path/latest from $source_dir"
-          else
-            echo "No files to copy from $source_dir"
-          fi
-          shopt -u nullglob
+          # Assuming allure is installed globally or via npm script that resolves `allure` command
+          # If using `npm run allure:generate`, ensure that script passes arguments correctly.
+          # Example: npx allure generate --clean allure-results --output "$REPORT_OUTPUT_DIR"
+          # The original used `npm run allure:generate -- --report-name ... --output ...`
+          # Let's stick to that if it's defined in package.json
+          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV_NAME }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
+          npm run allure:generate -- \
+            --report-name "$REPORT_NAME" \
+            --output "$REPORT_OUTPUT_DIR" || {
+            echo "❌ Failed to generate Allure report"
+            # List contents of allure-results for debugging
+            echo "Contents of allure-results:"
+            ls -la allure-results
+            exit 1
+          }
+          echo "✅ Allure report generated successfully into $REPORT_OUTPUT_DIR"
+          echo "Listing contents of generated report directory:"
+          ls -la "$REPORT_OUTPUT_DIR"
 
-            git add .
-            git commit -m "Update Allure Report for ${{ env.APPLICATION }} ${{ env.ENV }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
-            git pull --rebase origin gh-pages || true
+      - name: Patch Allure Report Title in summary.json (if exists)
+        if: always()
+        run: |
+          SUMMARY_FILE="gh-pages/${{ env.APPLICATION }}/${{ env.ENV_NAME }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/widgets/summary.json"
+          TITLE="Playwright Run: ${{ env.APPLICATION }} | ${{ env.ENV_NAME }} | ${{ env.TEST_SCOPE }} | #${{ env.UNIQUE_RUN_ID }}"
+          if [ -f "$SUMMARY_FILE" ]; then
+            echo "Patching reportName in $SUMMARY_FILE to: $TITLE"
+            # Ensure jq is installed (usually available on ubuntu-latest)
+            if command -v jq &> /dev/null; then
+              jq --arg title "$TITLE" '.reportName = $title' "$SUMMARY_FILE" > tmp.$$.json && mv tmp.$$.json "$SUMMARY_FILE"
+              echo "Report title patched."
+            else
+              echo "⚠️ jq command not found. Cannot patch Allure report title."
+            fi
+          else
+            echo "⚠️ Allure summary.json not found at $SUMMARY_FILE. Skipping title patch."
+          fi
+
+      - name: Debug gh-pages content before commit
+        if: always()
+        working-directory: ./gh-pages
+        run: |
+          echo "🌲 Contents of ./gh-pages directory before commit:"
+          find . -ls # Detailed listing
+          echo "---"
+
+      - name: Commit and Push Allure Report to gh-pages branch
+        if: always()
+        working-directory: ./gh-pages # IMPORTANT: All git operations happen here
+        env:
+          APPLICATION: ${{ env.APPLICATION }}
+          ENV_NAME: ${{ env.ENV_NAME }}
+          TEST_SCOPE: ${{ env.TEST_SCOPE }}
+          UNIQUE_RUN_ID: ${{ env.UNIQUE_RUN_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For git push
+        run: |
+          set -e # Exit on any error
+
+          echo "Configuring Git user..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # The token is best handled by actions/checkout's persist-credentials or by explicitly setting remote URL with token
+
+          REPORT_DIR_PATH="${APPLICATION}/${ENV_NAME}/${TEST_SCOPE}"
+          CURRENT_RUN_DIR_IN_GHPAGES="${REPORT_DIR_PATH}/${UNIQUE_RUN_ID}" # Path relative to gh-pages root
+          LATEST_DIR_IN_GHPAGES="${REPORT_DIR_PATH}/latest"
+
+          echo "Current run report is in (relative to gh-pages root): ${CURRENT_RUN_DIR_IN_GHPAGES}"
+          echo "'latest' report will be updated in (relative to gh-pages root): ${LATEST_DIR_IN_GHPAGES}"
+
+          if [ ! -d "$CURRENT_RUN_DIR_IN_GHPAGES" ]; then
+            echo "❌ Error: Current run directory $CURRENT_RUN_DIR_IN_GHPAGES does not exist within gh-pages checkout!"
+            echo "This indicates Allure report was not generated into the correct location."
+            exit 1
+          fi
+          
+          echo "Updating 'latest' directory from $CURRENT_RUN_DIR_IN_GHPAGES..."
+          rm -rf "$LATEST_DIR_IN_GHPAGES"
+          mkdir -p "$(dirname "$LATEST_DIR_IN_GHPAGES")" # Ensure parent path exists
+          if [ -n "$(ls -A "$CURRENT_RUN_DIR_IN_GHPAGES")" ]; then
+            cp -a "$CURRENT_RUN_DIR_IN_GHPAGES/." "$LATEST_DIR_IN_GHPAGES/" # Copy contents
+            echo "✅ 'latest' directory updated successfully."
+          else
+            echo "⚠️ Warning: Current run directory $CURRENT_RUN_DIR_IN_GHPAGES is empty. 'latest' will be empty."
+          fi
+
+          echo "Adding all changes in gh-pages checkout to Git..."
+          git add .
+
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit to gh-pages branch."
+          else
+            echo "Committing changes to gh-pages branch..."
+            COMMIT_MSG="Deploy Allure Report: ${APPLICATION}/${ENV_NAME}/${TEST_SCOPE} - Run #${UNIQUE_RUN_ID}"
+            git commit -m "$COMMIT_MSG"
+            
+            echo "Pulling with rebase from origin gh-pages..."
+            # Handle potential rebase failures gracefully or consider alternatives
+            if ! git pull --rebase origin gh-pages; then
+              echo "⚠️ Rebase failed. Attempting push without rebase. Check for conflicts manually if push fails."
+              # If rebase fails, you might need to decide on a strategy:
+              # - Force push (dangerous, can lose history if others push to gh-pages)
+              # - Abort rebase and try a merge (git rebase --abort; git pull origin gh-pages)
+              # - For now, let's just try to push.
+            fi
+            
+            echo "Pushing changes to origin gh-pages..."
             git push origin gh-pages
+            echo "✅ Successfully pushed to gh-pages branch."
+          fi
 
       - name: Fail job if tests failed
-        if: steps.run_tests.outputs.test_status == 'failure'
+        if: always() && steps.run_tests.outputs.test_status == 'failure'
         run: |
-          echo "Tests failed, marking job as failed"
+          echo "❌ Tests failed, marking job as failed."
           exit 1
-
-      - name: Patch Allure Report Title
-        run: |
-          SUMMARY_FILE="gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/widgets/summary.json"
-          TITLE="Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}"
-          if [ -f "$SUMMARY_FILE" ]; then
-            jq --arg title "$TITLE" '.reportName = $title' "$SUMMARY_FILE" > tmp.$$.json && mv tmp.$$.json "$SUMMARY_FILE"
-          fi
 
   deploy:
     name: Deploy Allure Report to GitHub Pages
     runs-on: ubuntu-latest
     needs: run-and-publish
-    if: ${{ always() }}
+    if: ${{ always() }} # Ensure deployment job runs even if tests fail to publish the report
 
     concurrency:
-      group: github-pages-deployment
-      cancel-in-progress: false
+      group: github-pages-deployment-${{ github.repository }} # Repository-wide concurrency for Pages deployment
+      cancel-in-progress: false # Changed to false to ensure a report always deploys
 
     permissions:
-      contents: write
+      contents: read # Only needs read for checkout if gh-pages is public, write if it's private and using token
       pages: write
       id-token: write
 
     env:
       APPLICATION: ${{ needs.run-and-publish.outputs.application }}
-      ENV: ${{ github.event.inputs.env || github.event.client_payload.env || 'uat' }}
+      # Use the same ENV_NAME convention for consistency
+      ENV_NAME: ${{ github.event.inputs.env || 'uat' }} # Get from original dispatch inputs if available, else default
       TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       GITHUB_ORG: ${{ github.repository_owner }}
-      GITHUB_REPO: ${{ github.event.repository.name }}
+      GITHUB_REPO_NAME: ${{ github.event.repository.name }} # just repo name
       TEST_STATUS: ${{ needs.run-and-publish.outputs.test_status }}
 
     outputs:
@@ -384,28 +449,67 @@ jobs:
       test_status: ${{ needs.run-and-publish.outputs.test_status }}
 
     steps:
-      - name: Checkout gh-pages branch
+      - name: Checkout gh-pages branch for deployment
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO }}
+          repository: ${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO_NAME }}
           ref: gh-pages
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # Not strictly necessary for copy, but good practice
+          # No token needed here if gh-pages is public, or if using default GITHUB_TOKEN for private repo checkout
+      
+      - name: Debug gh-pages checkout for deploy job
+        run: |
+          echo "🌲 Contents of checked-out gh-pages branch in deploy job:"
+          pwd
+          ls -la
+          echo "--- Recursive listing (first 2 levels) ---"
+          find . -maxdepth 3 -ls # Show some structure
+          echo "---"
 
-      - name: Build site folder
+      - name: Build site folder from gh-pages content
         run: |
           mkdir -p site
-          for application in $(ls -d */ | sed 's#/##' | grep -v '^site$'); do
-            for env in $(ls -d "$application"/*/ 2>/dev/null | sed 's#.*/##'); do
-              if [ -d "$application/$env" ]; then
-                echo "Copying $application/$env directory to site/"
-                mkdir -p "site/$application"
-                cp -a "$application/$env" "site/$application/"
-              else
-                echo "› No $application/$env folder yet, skipping"
-              fi
+          echo "Copying all content from gh-pages checkout root to site/ directory..."
+          
+          # Check if the current directory (gh-pages checkout) has content
+          if [ -z "$(ls -A .)" ]; then
+            echo "⚠️ gh-pages checkout is empty. The 'site' directory will be empty."
+            # Create a placeholder index.html to avoid deploy errors of empty artifact
+            echo "<h1>No reports found</h1><p>The gh-pages branch appears to be empty.</p>" > site/index.html
+          else
+            # Copy all files and directories (including hidden ones like .gitkeep if any)
+            shopt -s dotglob
+            cp -a ./* site/
+            shopt -u dotglob
+            echo "✅ Contents copied to site/."
+
+            # Optional: Create a root index.html listing all reports
+            echo "Generating root index.html for the site..."
+            echo "<h1>Allure Test Reports</h1>" > site/index.html
+            echo "<p>Repository: <a href=\"https://github.com/${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO_NAME }}\">${{ env.GITHUB_ORG }}/${{ env.GITHUB_REPO_NAME }}</a></p>" >> site/index.html
+            echo "<ul>" >> site/index.html
+            
+            # Find all index.html files within the site structure (which mirrors gh-pages)
+            # and generate relative links.
+            # Current directory for find is site/
+            cd site
+            find . -path '*/index.html' -type f -print0 | while IFS= read -r -d $'\0' report_index_file; do
+              # report_index_file is like ./APP/ENV/SCOPE/RUN_ID/index.html
+              # or ./APP/ENV/SCOPE/latest/index.html
+              # We want the link to be relative to the site root.
+              link_path=$(echo "$report_index_file" | sed 's|^\./||; s|/index.html$||')
+              display_name=$(echo "$link_path" | sed 's|/| / |g')
+              echo "  <li><a href=\"${link_path}/\">${display_name}</a></li>" >> ../site/index.html # Append to site/index.html
             done
-          done
+            cd .. # Back to workspace root
+            echo "</ul>" >> site/index.html
+            echo "<p><em>Generated at $(date -u +"%Y-%m-%dT%H:%M:%SZ")</em></p>" >> site/index.html
+            echo "✅ Root index.html generated."
+          fi
+          
+          echo "🌲 Contents of site/ directory before upload:"
+          ls -R site
+          echo "---"
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
@@ -415,23 +519,33 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        # No explicit GITHUB_TOKEN needed here, deploy-pages handles it via OIDC
 
-      - name: Post deployment link
-        run: |
-          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
-          echo "✅ Report available at: ${REPORT_URL}"
-
-      - name: Set output for report URL
+      - name: Post deployment link & Set Output
         id: set_output
         run: |
-          echo "report_url=https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
+          # The deployment URL is an output of the actions/deploy-pages step
+          # However, constructing it manually is also common for immediate feedback
+          # The actual URL for a specific report:
+          SPECIFIC_REPORT_URL="${{ steps.deployment.outputs.page_url }}${{ env.APPLICATION }}/${{ env.ENV_NAME }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          # The root URL of the deployed site:
+          ROOT_SITE_URL="${{ steps.deployment.outputs.page_url }}"
 
-      - name: Create deployment summary
-        run: |
-          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          echo "✅ GitHub Pages deployment initiated. Site will be available at: ${ROOT_SITE_URL}"
+          echo "Specific report for this run should be at: ${SPECIFIC_REPORT_URL}"
+          
+          # Output the root URL for general reference, and specific if needed elsewhere
+          echo "report_url=${SPECIFIC_REPORT_URL}" >> $GITHUB_OUTPUT
+          echo "root_site_url=${ROOT_SITE_URL}" >> $GITHUB_OUTPUT # New output for root site
+
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
-          echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
+          echo "- **View Site Root:** [${ROOT_SITE_URL}](${ROOT_SITE_URL})" >> $GITHUB_STEP_SUMMARY
+          echo "- **View Specific Report (#${{ env.UNIQUE_RUN_ID }}):** [Link to Report](${SPECIFIC_REPORT_URL})" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ env.TEST_STATUS }}" == "failure" ]]; then
+            echo "- ⚠️ **Test Status: FAILURE**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ✅ **Test Status: SUCCESS**" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Sleep 30 seconds
         run: sleep 30
-
