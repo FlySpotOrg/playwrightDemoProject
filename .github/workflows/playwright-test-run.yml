@@ -234,7 +234,7 @@ jobs:
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "buildOrder": "${{ github.run_number }}",
-            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
+            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
             "executor": "GitHub Actions"
@@ -245,12 +245,13 @@ jobs:
         run: |
           LATEST_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
           echo "Application: ${{ env.APPLICATION }}" > allure-results/environment.properties
+          echo "Env: ${{ env.ENV }}" > allure-results/environment.properties
           echo "Test_Scope: ${{ env.TEST_SCOPE }}" >> allure-results/environment.properties
           echo "Latest_Report_URL: $LATEST_URL" >> allure-results/environment.properties
 
       - name: Generate Allure report
         run: |
-          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
+          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
@@ -288,7 +289,7 @@ jobs:
             rm -rf "$target_dir" || true
             mkdir -p "$target_dir"
             shopt -s nullglob
-            files=("$source_dir"/*)
+            files=("$source_dir/"*)
             if [ ${#files[@]} -gt 0 ]; then
               cp -a "$source_dir/"* "$target_dir/"
               echo "Updated $path/latest from $source_dir"
@@ -303,9 +304,9 @@ jobs:
             return 0
           }
 
-          for application in admin compass admin-compass-integration; do
-            for env in uat dev test-automation-1; do
-              for scope in regression smoke; do
+          for application in $(ls -d */ | sed 's#/##' | grep -v '^site$'); do
+            for env in $(ls -d "$application"/*/ 2>/dev/null | sed 's#.*/##'); do
+              for scope in $(ls -d "$application/$env"/*/ 2>/dev/null | sed 's#.*/##'); do
                 if [ -d "$application/$env/$scope" ]; then
                   update_latest "$application/$env/$scope"
                   # generate_history_index "$application/$env/$scope"  # Removed
@@ -315,7 +316,7 @@ jobs:
           done
 
           git add .
-          git commit -m "Update Allure Report for ${{ env.APPLICATION }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
+          git commit -m "Update Allure Report for ${{ env.APPLICATION }} ${{ env.ENV }} ${{ env.TEST_SCOPE }} #${{ env.UNIQUE_RUN_ID }}" || echo "Nothing to commit"
           git pull --rebase origin gh-pages || true
           git push origin gh-pages
 
