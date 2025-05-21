@@ -1,1 +1,1 @@
-[]
+[{"uid":"9281e41bc5d70b5a","name":"User should get a specific room by ID","time":{"start":1747839400362,"stop":1747839403385,"duration":3023},"status":"passed","severity":"normal"},{"uid":"f4666c72d01a9d05","name":"User should be able to book a room","time":{"start":1747839412542,"stop":1747839415492,"duration":2950},"status":"failed","severity":"normal"},{"uid":"420a0a0534a65740","name":"Admin should handle login","time":{"start":1747839416426,"stop":1747839418966,"duration":2540},"status":"passed","severity":"normal"}]
