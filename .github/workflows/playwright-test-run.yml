@@ -416,7 +416,7 @@ jobs:
               local dir="$1"
               [ -f "$dir/index.html" ] && return
               local relpath="${dir#site/}"
-              local breadcrumbs="<a href=\"/\">Allure Test Reports</a>"
+              local breadcrumbs="<a href=\"/playwrightDemoProject/\">Allure Test Reports</a>"
               if [ -n "$relpath" ]; then
                 relpath="${relpath%/}"
                 IFS='/' read -ra parts <<< "$relpath"
