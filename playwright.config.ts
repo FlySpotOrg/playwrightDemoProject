@@ -1,4 +1,4 @@
-import { PlaywrightTestConfig } from "@playwright/test";
+import { PlaywrightTestConfig, test } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   testDir: "./src/features",
@@ -18,7 +18,7 @@ const config: PlaywrightTestConfig = {
   reporter: [["html"], ["allure-playwright"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: "https://automationintesting.online",
+    baseURL: "",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
     video: "on-first-retry",
@@ -37,5 +37,43 @@ const config: PlaywrightTestConfig = {
     },
   ],
 };
+
+interface Environment {
+  neevadminBaseURL: string;
+  compassBaseURL: string;
+}
+
+export function setBaseURL(app: string) {
+  const env = process.env.ENV;
+  switch (env) {
+    case "uat":
+      config.use.baseURL = uat[app];
+      break;
+    case "dev":
+      config.use.baseURL = dev[app];
+      break;
+    case "test-automation-1":
+      config.use.baseURL = testAutomation1[app];
+      break;
+    default:
+      return new Error(`App ${app} in Environment ${env} not found`);
+  }
+  test.use({ baseURL: config.use.baseURL });
+}
+
+const uat: Environment = {
+  neevadminBaseURL: "https://automationintesting.online",
+  compassBaseURL: "https://automationintesting.online",
+}
+
+const dev: Environment = {
+  neevadminBaseURL: "https://automationintesting.online",
+  compassBaseURL: "https://automationintesting.online",
+}
+
+const testAutomation1: Environment = {
+  neevadminBaseURL: "https://automationintesting.online",
+  compassBaseURL: "https://automationintesting.online",
+}
 
 export default config;

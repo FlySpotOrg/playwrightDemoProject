@@ -32,6 +32,6 @@ export class RoomsPage extends FrontPage {
   }
 
   async navigateToAdmin() {
-    await this.page.goto("/admin");
+    await this.page.goto(`${this.baseURL}/admin`);
   }
 }

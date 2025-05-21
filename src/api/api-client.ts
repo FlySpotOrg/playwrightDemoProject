@@ -2,7 +2,8 @@ import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import axios from "axios";
 import { logger } from "../utils/logger";
 import { Credentials } from "../types/types";
-import config from "playwright.config";
+import config, { setBaseURL } from "playwright.config";
+import { environments } from "src/config/auth.config";
 
 export default class ApiClient {
   protected _token: string;
@@ -10,7 +11,9 @@ export default class ApiClient {
   protected axios_instance: AxiosInstance;
 
   public constructor() {
-    const baseURL = config.use.baseURL.concat("/api");
+    setBaseURL("neevadmin");
+    console.log("CURRENT BASE URL: ", config.use.baseURL);
+    const baseURL = environments[process.env.ENV].applications.neevadmin.baseURL.concat("/api");
     const axiosConfig = {
       baseURL: baseURL,
       validateStatus: null,
