@@ -397,10 +397,8 @@ jobs:
           mkdir -p site
           if [ -z "$(ls -A .)" ]; then
             echo "⚠️ gh-pages checkout is empty. The 'site' directory will be empty."
-            # Create a placeholder index.html to avoid deploy errors of empty artifact
             echo "<h1>No reports found</h1><p>The gh-pages branch appears to be empty.</p>" > site/index.html
           else
-            # Copy all files and directories (including hidden ones like .gitkeep if any)
             shopt -s dotglob
             cp -a ./* site/
             shopt -u dotglob
