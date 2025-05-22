@@ -180,6 +180,9 @@ jobs:
               [ -n "$tag" ] && INCLUDE_REGEX="$INCLUDE_REGEX|$tag"
             done
           fi
+          if [ -n "${{ steps.build_grep.outputs.grep }}" ]; then
+            INCLUDE_REGEX="$INCLUDE_REGEX|${{ steps.build_grep.outputs.grep }}"
+          fi
           INCLUDE_REGEX="${INCLUDE_REGEX#|}"
 
           EXCLUDE_REGEX=""
