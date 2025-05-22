@@ -27,11 +27,11 @@ const config: PlaywrightTestConfig = {
   /* Configure projects for major browsers */
   projects: [
     {
-      name: "API",
+      name: "@API",
       testMatch: /.*\.api\.spec\.ts/,
     },
     {
-      name: "UI",
+      name: "@UI",
       testMatch: /.*\.spec\.ts/,
       testIgnore: /.*\.api\.spec\.ts/,
     },
