@@ -138,7 +138,7 @@ jobs:
             INCLUDE+=("@${{ github.event.inputs.test_type }}")
           fi
 
-          # Include tags
+          # Include tags (AND logic)
           if [ -n "${{ github.event.inputs.include_tags }}" ]; then
             IFS=',' read -ra TAGS <<< "${{ github.event.inputs.include_tags }}"
             for tag in "${TAGS[@]}"; do
@@ -147,44 +147,13 @@ jobs:
             done
           fi
 
-          # Build include grep
-          GREP_INCLUDE=""
+          # Build INCLUDE_REGEX (AND logic)
+          INCLUDE_REGEX=""
           for tag in "${INCLUDE[@]}"; do
-            GREP_INCLUDE="$GREP_INCLUDE(?=.*$tag)"
+            INCLUDE_REGEX="${INCLUDE_REGEX}(?=.*$tag)"
           done
 
-          # Exclude tags
-          GREP_EXCLUDE=""
-          if [ -n "${{ github.event.inputs.exclude_tags }}" ]; then
-            IFS=',' read -ra EXCLUDE <<< "${{ github.event.inputs.exclude_tags }}"
-            for tag in "${EXCLUDE[@]}"; do
-              tag=$(echo "$tag" | xargs)
-              [ -n "$tag" ] && GREP_EXCLUDE="$GREP_EXCLUDE(?!.*$tag)"
-            done
-          fi
-
-          # Final grep
-          FINAL_GREP="$GREP_INCLUDE$GREP_EXCLUDE"
-          echo "grep=$FINAL_GREP" >> $GITHUB_OUTPUT
-
-      - name: Run Playwright Tests
-        env:
-          env: ${{ github.event.inputs.env }}
-        continue-on-error: true
-        run: |
-          INCLUDE_REGEX=""
-          if [ -n "${{ github.event.inputs.include_tags }}" ]; then
-            IFS=',' read -ra TAGS <<< "${{ github.event.inputs.include_tags }}"
-            for tag in "${TAGS[@]}"; do
-              tag=$(echo "$tag" | xargs)
-              [ -n "$tag" ] && INCLUDE_REGEX="$INCLUDE_REGEX|$tag"
-            done
-          fi
-          if [ -n "${{ steps.build_grep.outputs.grep }}" ]; then
-            INCLUDE_REGEX="$INCLUDE_REGEX|${{ steps.build_grep.outputs.grep }}"
-          fi
-          INCLUDE_REGEX="${INCLUDE_REGEX#|}"
-
+          # Exclude tags (OR logic)
           EXCLUDE_REGEX=""
           if [ -n "${{ github.event.inputs.exclude_tags }}" ]; then
             IFS=',' read -ra TAGS <<< "${{ github.event.inputs.exclude_tags }}"
@@ -194,6 +163,17 @@ jobs:
             done
           fi
           EXCLUDE_REGEX="${EXCLUDE_REGEX#|}"
+
+          echo "include_regex=$INCLUDE_REGEX" >> $GITHUB_OUTPUT
+          echo "exclude_regex=$EXCLUDE_REGEX" >> $GITHUB_OUTPUT
+
+      - name: Run Playwright Tests
+        env:
+          env: ${{ github.event.inputs.env }}
+        continue-on-error: true
+        run: |
+          INCLUDE_REGEX="${{ steps.build_grep.outputs.include_regex }}"
+          EXCLUDE_REGEX="${{ steps.build_grep.outputs.exclude_regex }}"
 
           CMD="npx dotenvx run -- npx playwright test"
           [ -n "$INCLUDE_REGEX" ] && CMD="$CMD --grep '$INCLUDE_REGEX'"
