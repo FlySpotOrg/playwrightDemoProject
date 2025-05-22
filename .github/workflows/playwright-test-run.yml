@@ -172,14 +172,13 @@ jobs:
           descriptions[test_scope]="Test scope"
           descriptions[test_type]="Test type"
           descriptions[env]="Environment"
-          descriptions[include_tags]="Include tags (comma separated, e.g. @new,@positive)"
-          descriptions[exclude_tags]="Exclude tags (comma separated, e.g. @old,@negative)"
-          descriptions[run_branch]="Branch to run tests on"
+          descriptions[include_tags]="Include tags"
+          descriptions[exclude_tags]="Exclude tags"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
           echo "$INPUTS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while IFS== read -r key value; do
             desc="${descriptions[$key]:-$key}"
-            echo "| $desc | $value |" >> $GITHUB_STEP_SUMMARY
+            echo "| $desc | \\`$value\\` |" >> $GITHUB_STEP_SUMMARY
           done
 
       - name: Checkout gh-pages branch
