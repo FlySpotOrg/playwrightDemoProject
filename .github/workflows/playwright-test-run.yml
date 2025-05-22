@@ -404,55 +404,76 @@ jobs:
 
       - name: Build site folder
         run: |
+          #— steal in your GH_ORG and GH_REPO so links work properly
           export GITHUB_ORG="${{ env.GITHUB_ORG }}"
           export GITHUB_REPO="${{ env.GITHUB_REPO }}"
+      
+          #— start fresh
+          rm -rf site
           mkdir -p site
-          if [ -z "$(ls -A .)" ]; then
-            echo "⚠️ gh-pages checkout is empty. The 'site' directory will be empty."
-            echo "<h1>No reports found</h1><p>The gh-pages branch appears to be empty.</p>" > site/index.html
+      
+          #— copy everything from your gh-pages branch into site/, preserving history
+          if [ -d gh-pages ]; then
+            rsync -a --delete gh-pages/ site/
+            echo "✅ Copied all gh-pages content into site/"
           else
-            rsync -av --exclude site ./ site/
-            echo "✅ Contents copied to site/."
-
-            generate_index() {
-              local dir="$1"
-              [ -f "$dir/index.html" ] && return
-              local relpath="${dir#site/}"
-              local org="${GITHUB_ORG:-yourorg}"
-              local repo="${GITHUB_REPO:-yourrepo}"
-              local root_url="https://${org}.github.io/${repo}/"
-              local breadcrumbs="<a href=\"${root_url}\">Allure Test Reports</a>"
-              if [ -n "$relpath" ]; then
-                relpath="${relpath%/}"
-                IFS='/' read -ra parts <<< "$relpath"
-                local path_accum=""
-                for i in "${!parts[@]}"; do
-                  path_accum="$path_accum/${parts[$i]}"
-                  breadcrumbs="$breadcrumbs: <a href=\"$path_accum/\">${parts[$i]}</a>"
-                done
-              fi
-              local title="$breadcrumbs"
-
-              echo "<h1>${title}</h1>" > "$dir/index.html"
-              echo "<ul>" >> "$dir/index.html"
-              for subdir in "$dir"/*/; do
-                [ -d "$subdir" ] || continue
-                subname=$(basename "$subdir")
-                echo "  <li><a href=\"${subname}/\">${subname}</a></li>" >> "$dir/index.html"
-              done
-              echo "</ul>" >> "$dir/index.html"
-              echo "<p><em>Generated at $(date -u +\"%Y-%m-%dT%H:%M:%SZ\")</em></p>" >> "$dir/index.html"
-            }
-
-            export -f generate_index
-            find site -type d -print0 | xargs -0 -I{} bash -c 'generate_index "$@"' _ {}
-
-            echo "✅ Hierarchical index.html files generated."
+            echo "⚠️ gh-pages directory not found; site/ will be empty"
           fi
-          
-          echo "🌲 Contents of site/ directory before upload:"
-          ls -R site
-          echo "---"
+      
+          #— function to emit an index.html in each folder
+          generate_index() {
+            local dir="$1"
+      
+            # skip if there's already an index.html (e.g. Allure’s own)
+            [ -f "$dir/index.html" ] && return
+      
+            # compute “rel” path inside site/
+            local rel
+            if [ "$dir" = "site" ]; then
+              rel="" 
+            else
+              rel="${dir#site/}"
+            fi
+      
+            # base URL for your pages
+            local base="https://${GITHUB_ORG}.github.io/${GITHUB_REPO}/"
+      
+            # start breadcrumb with the root
+            local crumbs="<a href=\"${base}\">Allure Test Reports</a>"
+      
+            # append each path segment
+            local path_acc=""
+            IFS='/' read -ra parts <<< "$rel"
+            for p in "${parts[@]}"; do
+              [ -n "$p" ] || continue
+              path_acc="${path_acc}${p}/"
+              crumbs="${crumbs} › <a href=\"${base}${path_acc}\">${p}</a>"
+            done
+      
+            # build index.html
+            {
+              echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Allure Test Reports</title></head><body>'
+              echo "<nav>${crumbs}</nav>"
+              echo '<ul>'
+              for d in "$dir"/*/; do
+                [ -d "$d" ] || continue
+                name="$(basename "$d")"
+                echo "  <li><a href=\"${name}/\">${name}</a></li>"
+              done
+              echo '</ul>'
+              echo "<footer><em>Generated at $(date -u +'%Y-%m-%dT%H:%M:%SZ')</em></footer>"
+              echo '</body></html>'
+            } > "$dir/index.html"
+          }
+      
+          # export & run it everywhere under site/
+          export -f generate_index
+          find site -type d -print0 \
+            | xargs -0 -n1 bash -c 'generate_index "$@"' _
+      
+          echo "✅ index.html generated in all directories"
+          echo "🌲 Final site/ contents:"
+          find site | sed 's/^/  /'
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
