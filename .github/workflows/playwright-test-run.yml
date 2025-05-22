@@ -1,24 +1,6 @@
 name: Playwright Test Runner
 
 on:
-  workflow_call:
-    inputs:
-      run_branch:
-        description: "Branch to run tests on"
-        required: true
-        type: string
-        default: "main"
-      test_scope:
-        description: "Test scope to run"
-        required: true
-        type: string
-        default: "regression"
-      application:
-        description: "Application to run"
-        required: true
-        type: string
-        default: "neevadmin"
-
   workflow_dispatch:
     inputs:
       application:
@@ -130,7 +112,6 @@ jobs:
       - name: Build Playwright grep expression
         id: build_grep
         run: |
-          # Application, Scope, Type
           INCLUDE=()
           [ -n "${{ github.event.inputs.application }}" ] && INCLUDE+=("@${{ github.event.inputs.application }}")
           [ -n "${{ github.event.inputs.test_scope }}" ] && INCLUDE+=("@${{ github.event.inputs.test_scope }}")
@@ -138,7 +119,6 @@ jobs:
             INCLUDE+=("@${{ github.event.inputs.test_type }}")
           fi
 
-          # Include tags (AND logic)
           if [ -n "${{ github.event.inputs.include_tags }}" ]; then
             IFS=',' read -ra TAGS <<< "${{ github.event.inputs.include_tags }}"
             for tag in "${TAGS[@]}"; do
@@ -147,13 +127,11 @@ jobs:
             done
           fi
 
-          # Build INCLUDE_REGEX (AND logic)
           INCLUDE_REGEX=""
           for tag in "${INCLUDE[@]}"; do
             INCLUDE_REGEX="${INCLUDE_REGEX}(?=.*$tag)"
           done
 
-          # Exclude tags (OR logic)
           EXCLUDE_REGEX=""
           if [ -n "${{ github.event.inputs.exclude_tags }}" ]; then
             IFS=',' read -ra TAGS <<< "${{ github.event.inputs.exclude_tags }}"
