@@ -1,0 +1,2 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","2571","User should be able to submit contact form","UI","Thu May 22 16:49:22 UTC 2025","passed","Thu May 22 16:49:24 UTC 2025","Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
