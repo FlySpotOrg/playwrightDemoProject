@@ -416,24 +416,26 @@ jobs:
               local dir="$1"
               [ -f "$dir/index.html" ] && return
               local relpath
-                if [ "$dir" = "site" ]; then
-                  relpath="" 
-                else
-                  relpath="${dir#site/}"
-                fi
-              local breadcrumbs="<a href=\"https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/\">Allure Test Reports</a>"
-              if [ -n "$relpath" ]; then
-                relpath="${relpath%/}"
-                IFS='/' read -ra parts <<< "$relpath"
-                local path_accum="${{ env.GITHUB_REPO }}/"
-                for i in "${!parts[@]}"; do
-                  path_accum="$path_accum/${parts[$i]}"
-                  breadcrumbs="$breadcrumbs: <a href=\"$path_accum/\">${parts[$i]}</a>"
-                done
+              if [ "$dir" = "site" ]; then
+                relpath=""
+              else
+                relpath="${dir#site/}"
               fi
+              local org="${GITHUB_ORG:-yourorg}"
+              local repo="${GITHUB_REPO:-yourrepo}"
+              local base_url="https://${org}.github.io/${repo}/"
+              local breadcrumbs="<a href=\"${base_url}\">Allure Test Reports</a>"
+
+              local path_accum=""
+              IFS='/' read -ra parts <<< "$relpath"
+              for p in "${parts[@]}"; do
+                [ -n "$p" ] || continue
+                path_accum="${path_accum}${p}/"
+                breadcrumbs="${breadcrumbs} : <a href=\"${base_url}${path_accum}\">${p}</a>"
+              done
               local title="$breadcrumbs"
 
-              echo "<h1>${title}</h1>" > "$dir/index.html"
+              echo "<h2>${title}</h2>" > "$dir/index.html"
               echo "<ul>" >> "$dir/index.html"
               for subdir in "$dir"/*/; do
                 [ -d "$subdir" ] || continue
