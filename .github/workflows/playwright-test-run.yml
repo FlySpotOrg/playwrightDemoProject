@@ -404,6 +404,8 @@ jobs:
 
       - name: Build site folder
         run: |
+          export GITHUB_ORG="${{ env.GITHUB_ORG }}"
+          export GITHUB_REPO="${{ env.GITHUB_REPO }}"
           mkdir -p site
           if [ -z "$(ls -A .)" ]; then
             echo "⚠️ gh-pages checkout is empty. The 'site' directory will be empty."
@@ -416,7 +418,10 @@ jobs:
               local dir="$1"
               [ -f "$dir/index.html" ] && return
               local relpath="${dir#site/}"
-              local breadcrumbs="<a href=\"/playwrightDemoProject/\">Allure Test Reports</a>"
+              local org="${GITHUB_ORG:-yourorg}"
+              local repo="${GITHUB_REPO:-yourrepo}"
+              local root_url="https://${org}.github.io/${repo}/"
+              local breadcrumbs="<a href=\"${root_url}\">Allure Test Reports</a>"
               if [ -n "$relpath" ]; then
                 relpath="${relpath%/}"
                 IFS='/' read -ra parts <<< "$relpath"
