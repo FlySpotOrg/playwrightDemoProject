@@ -8,7 +8,7 @@ import { AxiosResponse } from "axios";
 test.describe("Room API Tests", () => {
   test(
     "User should get all rooms",
-    { tag: ["@smoke", "@regression", "@new"] },
+    { tag: ["@neevadmin", "@smoke", "@regression", "@new"] },
     async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
       let allRooms: Room[];
       let createdRoom1: Room, createdRoom2: Room, createdRoom3: Room;
