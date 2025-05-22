@@ -172,12 +172,32 @@ jobs:
           env: ${{ github.event.inputs.env }}
         continue-on-error: true
         run: |
-          if [ -n "${{ steps.build_grep.outputs.grep }}" ]; then
-            npx dotenvx run -- npx playwright test --grep '${{ steps.build_grep.outputs.grep }}'
-          else
-            echo "No grep expression built!"
-            exit 1
+          INCLUDE_REGEX=""
+          if [ -n "${{ github.event.inputs.include_tags }}" ]; then
+            IFS=',' read -ra TAGS <<< "${{ github.event.inputs.include_tags }}"
+            for tag in "${TAGS[@]}"; do
+              tag=$(echo "$tag" | xargs)
+              [ -n "$tag" ] && INCLUDE_REGEX="$INCLUDE_REGEX|$tag"
+            done
           fi
+          INCLUDE_REGEX="${INCLUDE_REGEX#|}"
+
+          EXCLUDE_REGEX=""
+          if [ -n "${{ github.event.inputs.exclude_tags }}" ]; then
+            IFS=',' read -ra TAGS <<< "${{ github.event.inputs.exclude_tags }}"
+            for tag in "${TAGS[@]}"; do
+              tag=$(echo "$tag" | xargs)
+              [ -n "$tag" ] && EXCLUDE_REGEX="$EXCLUDE_REGEX|$tag"
+            done
+          fi
+          EXCLUDE_REGEX="${EXCLUDE_REGEX#|}"
+
+          CMD="npx dotenvx run -- npx playwright test"
+          [ -n "$INCLUDE_REGEX" ] && CMD="$CMD --grep '$INCLUDE_REGEX'"
+          [ -n "$EXCLUDE_REGEX" ] && CMD="$CMD --grep-invert '$EXCLUDE_REGEX'"
+
+          echo "Running: $CMD"
+          eval $CMD
 
       - name: Execution Context Summary
         run: |
