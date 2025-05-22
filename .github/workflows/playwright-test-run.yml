@@ -425,7 +425,7 @@ jobs:
               if [ -n "$relpath" ]; then
                 relpath="${relpath%/}"
                 IFS='/' read -ra parts <<< "$relpath"
-                local path_accum=""
+                local path_accum="${{ env.GITHUB_REPO }}/"
                 for i in "${!parts[@]}"; do
                   path_accum="$path_accum/${parts[$i]}"
                   breadcrumbs="$breadcrumbs: <a href=\"$path_accum/\">${parts[$i]}</a>"
