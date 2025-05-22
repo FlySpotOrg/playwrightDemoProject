@@ -246,25 +246,23 @@ jobs:
         run: |
           mkdir -p allure-results
           {
-            key="Latest_Report"; value="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
-            key="Application"; value="${APPLICATION}"
-            key="Test_Scope"; value="${TEST_SCOPE}"
-            key="Test_Type"; value="${GITHUB_EVENT_INPUTS_TEST_TYPE}"
-            key="Environment"; value="${ENV}"
-            key="Include_Tags"; value="${GITHUB_EVENT_INPUTS_INCLUDE_TAGS}"
-            key="Exclude_Tags"; value="${GITHUB_EVENT_INPUTS_EXCLUDE_TAGS}"
-            key="Test_Framework_Branch"; value="${CHECKOUT_REF}"
-            key="GitHub_Run_ID"; value="${GITHUB_RUN_ID}"
-            key="GitHub_Actor"; value="${GITHUB_ACTOR}"
-            key="GitHub_Event"; value="${GITHUB_EVENT_NAME}"
-            key="Reports_Repository"; value="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-            echo "${key//_/ }: $value"
+            echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+            echo "Application: ${{ env.APPLICATION }}"
+            echo "Test_Scope: ${{ env.TEST_SCOPE }}"
+            echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
+            echo "Environment: ${{ env.ENV }}"
+            echo "Include_Tags: ${{ github.event.inputs.include_tags || '' }}"
+            echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || '' }}"
+            echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
+            echo "GitHub_Run_ID: ${{ github.run_id }}"
+            echo "GitHub_Actor: ${{ github.actor }}"
+            echo "GitHub_Event: ${{ github.event_name }}"
+            echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           } > allure-results/environment.properties
 
       - name: Generate Allure report
         run: |
-          REPORT_NAME="${{ env.APPLICATION }}_[${{ env.ENV }}-${{ env.TEST_SCOPE }}]_#${{ env.UNIQUE_RUN_ID }}"
-          REPORT_NAME="${REPORT_NAME//_/ }"
+          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
