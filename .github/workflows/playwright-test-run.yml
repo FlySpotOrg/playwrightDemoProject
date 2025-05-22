@@ -178,7 +178,7 @@ jobs:
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
           echo "$INPUTS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while IFS== read -r key value; do
             desc="${descriptions[$key]:-$key}"
-            echo "| $desc | \\`$value\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| $desc | \`$value\` |" >> $GITHUB_STEP_SUMMARY
           done
 
       - name: Checkout gh-pages branch
