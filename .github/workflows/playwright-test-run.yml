@@ -48,6 +48,15 @@ on:
         type: string
         required: false
         default: ""
+      browser:
+        description: "Browser to run Playwright tests on"
+        type: choice
+        required: true
+        options:
+          - chromium
+          - firefox
+          - webkit
+        default: chromium
 
 permissions:
   contents: write
@@ -152,10 +161,12 @@ jobs:
         run: |
           INCLUDE_REGEX="${{ steps.build_grep.outputs.include_regex }}"
           EXCLUDE_REGEX="${{ steps.build_grep.outputs.exclude_regex }}"
+          BROWSER="${{ github.event.inputs.browser }}"
 
           CMD="npx dotenvx run -- npx playwright test"
           [ -n "$INCLUDE_REGEX" ] && CMD="$CMD --grep '$INCLUDE_REGEX'"
           [ -n "$EXCLUDE_REGEX" ] && CMD="$CMD --grep-invert '$EXCLUDE_REGEX'"
+          [ -n "$BROWSER" ] && CMD="$CMD --browser=$BROWSER"
 
           echo "Running: $CMD"
           eval $CMD
@@ -174,6 +185,7 @@ jobs:
           descriptions[env]="Environment"
           descriptions[include_tags]="Include tags"
           descriptions[exclude_tags]="Exclude tags"
+          descriptions[browser]="Browser"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
           echo "$INPUTS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while IFS== read -r key value; do
@@ -238,6 +250,7 @@ jobs:
             echo "Test_Scope: ${{ env.TEST_SCOPE }}"
             echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
             echo "Environment: ${{ env.ENV }}"
+            echo "Browser: ${{ github.event.inputs.browser || 'chromium' }}"
             echo "Include_Tags: ${{ github.event.inputs.include_tags || '' }}"
             echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || '' }}"
             echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
