@@ -25,17 +25,17 @@ const config: PlaywrightTestConfig = {
   },
 
   /* Configure projects for major browsers */
-  // projects: [
-  //   {
-  //     name: "@API",
-  //     testMatch: /.*\.api\.spec\.ts/,
-  //   },
-  //   {
-  //     name: "@UI",
-  //     testMatch: /.*\.spec\.ts/,
-  //     testIgnore: /.*\.api\.spec\.ts/,
-  //   },
-  // ],
+  //  projects: [
+  //    {
+  //      name: "@API",
+  //      testMatch: /.*\.api\.spec\.ts/,
+  //    },
+  //    {
+  //      name: "@UI",
+  //      testMatch: /.*\.spec\.ts/,
+  //      testIgnore: /.*\.api\.spec\.ts/,
+  //    },
+  //  ],
 };
 
 export default config;
