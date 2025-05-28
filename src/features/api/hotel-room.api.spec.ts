@@ -5,7 +5,8 @@ import { admin } from "../../config/auth.config";
 import { getRandomDigits } from "../../utils/randomizer";
 import { AxiosResponse } from "axios";
 
-test.describe("[@neevadmin,@API] Room Tests", () => {
+test.describe("Room Tests", 
+  { tag: ["@neevadmin", "@API"] },() => {
   test(
     "User should get all rooms",
     { tag: ["@smoke", "@regression", "@new"] },
