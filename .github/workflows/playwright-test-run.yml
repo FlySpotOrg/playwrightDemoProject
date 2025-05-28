@@ -119,6 +119,7 @@ jobs:
         run: |
           npm ci
           npx playwright install
+          npx playwright install-deps
           curl -sfS https://dotenvx.sh/install.sh | sh
 
       - name: Build Playwright grep expression
