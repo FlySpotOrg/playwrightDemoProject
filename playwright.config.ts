@@ -1,4 +1,4 @@
-import { PlaywrightTestConfig, test } from "@playwright/test";
+import { devices, PlaywrightTestConfig, test } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   testDir: "./src/features",
@@ -25,17 +25,48 @@ const config: PlaywrightTestConfig = {
   },
 
   /* Configure projects for major browsers */
-  //  projects: [
-  //    {
-  //      name: "@API",
-  //      testMatch: /.*\.api\.spec\.ts/,
-  //    },
-  //    {
-  //      name: "@UI",
-  //      testMatch: /.*\.spec\.ts/,
-  //      testIgnore: /.*\.api\.spec\.ts/,
-  //    },
-  //  ],
+  projects: [
+    {
+      name: 'chrome',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome'
+      },
+    },
+
+    {
+      name: 'edge',
+      use: {
+        ...devices['Desktop Edge'],
+        channel: 'msedge'
+      },
+    },
+
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox']
+      },
+    },
+
+    {
+      name: 'safari',
+      use: {
+        ...devices['Desktop Safari']
+      },
+    },
+
+    /* Mobile Viewports */
+    {
+      name: 'mobile-Chrome-Pixel-7',
+      use: { ...devices['Pixel 7'] },
+    },
+
+    {
+      name: 'mobile-Safari-iPhone-15',
+      use: { ...devices['iPhone 15'] },
+    }
+  ]
 };
 
 export default config;

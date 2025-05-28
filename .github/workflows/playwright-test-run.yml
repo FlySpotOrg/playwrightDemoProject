@@ -49,14 +49,17 @@ on:
         required: false
         default: ""
       browser:
-        description: "Browser to run Playwright tests on"
+        description: "Browser"
         type: choice
         required: true
         options:
-          - chromium
+          - chrome
+          - edge
           - firefox
-          - webkit
-        default: chromium
+          - safari
+          - mobile-Chrome-Pixel-7
+          - mobile-Safari-iPhone-15
+        default: chrome
 
 permissions:
   contents: write
@@ -166,7 +169,7 @@ jobs:
           CMD="npx dotenvx run -- npx playwright test"
           [ -n "$INCLUDE_REGEX" ] && CMD="$CMD --grep '$INCLUDE_REGEX'"
           [ -n "$EXCLUDE_REGEX" ] && CMD="$CMD --grep-invert '$EXCLUDE_REGEX'"
-          [ -n "$BROWSER" ] && CMD="$CMD --browser=$BROWSER"
+          [ -n "$BROWSER" ] && CMD="$CMD --project=$BROWSER"
 
           echo "Running: $CMD"
           eval $CMD
@@ -250,7 +253,7 @@ jobs:
             echo "Test_Scope: ${{ env.TEST_SCOPE }}"
             echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
             echo "Environment: ${{ env.ENV }}"
-            echo "Browser: ${{ github.event.inputs.browser || 'chromium' }}"
+            echo "Browser: ${{ github.event.inputs.browser || 'chrome' }}"
             echo "Include_Tags: ${{ github.event.inputs.include_tags || '' }}"
             echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || '' }}"
             echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
