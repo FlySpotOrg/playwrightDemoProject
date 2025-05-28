@@ -8,7 +8,7 @@ let roomsPage: RoomsPage;
 let reservationPage: ReservationPage;
 let adminPage: AdminPage;
 
-test.describe("Hotel Booking Website Tests", () => {
+test.describe("@neevadmin-compass-integration @UI Hotel Booking Website Tests", () => {
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
     roomsPage = new RoomsPage(page);
@@ -18,7 +18,7 @@ test.describe("Hotel Booking Website Tests", () => {
 
   test(
     "User should be able to book a room",
-    { tag: ["@smoke", "@regression", "@neevadmin"] },
+    { tag: ["@smoke", "@regression"] },
     async ({ authHelper, bookingApiHelper, roomApiHelper }) => {
 
       const bookingDetails: BookingDetails = {
@@ -60,7 +60,7 @@ test.describe("Hotel Booking Website Tests", () => {
     }
   );
 
-  test("User should be able to submit contact form", { tag: ["@regression", "@compass"] }, async ({}) => {
+  test("User should be able to submit contact form", { tag: ["@regression"] }, async ({}) => {
     const contactFormData: ContactForm = {
       name: "Jane Smith",
       email: "jane.smith@example.com",
@@ -87,7 +87,7 @@ test.describe("Hotel Booking Website Tests", () => {
     });
   });
 
-  test("Admin should handle login", { tag: ["@regression", "@neevadmin"] }, async ({}) => {
+  test("Admin should handle login", { tag: ["@regression"] }, async ({}) => {
     const adminCredentials: Credentials = {
       username: "admin",
       password: "password",
