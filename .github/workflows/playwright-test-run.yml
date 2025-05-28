@@ -356,6 +356,23 @@ jobs:
             git pull --rebase origin gh-pages || true
             git push origin gh-pages
 
+      - name: Cleanup old reports (keep 5 + latest)
+        run: |
+          set -e
+          cd gh-pages
+          for path in $(find . -type d -path "./*/" -mindepth 3 -maxdepth 3); do
+            cd "$path"
+            runs=($(ls -d [0-9]*/ 2>/dev/null | sort -V | sed 's:/$::'))
+            if [ ${#runs[@]} -gt 5 ]; then
+              to_delete=("${runs[@]:0:${#runs[@]}-5}")
+              for old in "${to_delete[@]}"; do
+                echo "Deleting old report folder: $path/$old"
+                rm -rf "$old"
+              done
+            fi
+            cd - > /dev/null
+          done
+
       - name: Fail job if tests failed
         if: steps.run_tests.outputs.test_status == 'failure'
         run: |
