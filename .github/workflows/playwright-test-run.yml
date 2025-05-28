@@ -38,16 +38,6 @@ on:
           - dev
           - test-automation-1
         default: uat
-      include_tags:
-        description: "Include tags (comma separated, e.g. @new,@positive)"
-        type: string
-        required: false
-        default: ""
-      exclude_tags:
-        description: "Exclude tags (comma separated, e.g. @old,@negative)"
-        type: string
-        required: false
-        default: ""
       browser:
         description: "Browser"
         type: choice
@@ -60,6 +50,16 @@ on:
           - mobile-Chrome-Pixel-7
           - mobile-Safari-iPhone-15
         default: chrome
+      include_tags:
+        description: "Include tags (comma separated, e.g. @new,@positive)"
+        type: string
+        required: false
+        default: ""
+      exclude_tags:
+        description: "Exclude tags (comma separated, e.g. @old,@negative)"
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: write
