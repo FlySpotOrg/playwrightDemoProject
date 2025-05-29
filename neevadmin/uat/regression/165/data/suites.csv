@@ -1,7 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","1858","Admin should handle login","@UI","Thu May 22 17:27:39 UTC 2025","passed","Thu May 22 17:27:40 UTC 2025","Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
-"","2625","User should be able to submit contact form","@UI","Thu May 22 17:27:36 UTC 2025","passed","Thu May 22 17:27:39 UTC 2025","Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
-"","2292","User should find rooms with type Single","@API","Thu May 22 17:27:32 UTC 2025","passed","Thu May 22 17:27:35 UTC 2025","Room API Tests","api/hotel-room.api.spec.ts","",""
-"","61","test","@UI","Thu May 22 17:27:35 UTC 2025","passed","Thu May 22 17:27:35 UTC 2025","","test-1.spec.ts","",""
-"","2127","User should get a specific room by ID","@API","Thu May 22 17:27:28 UTC 2025","passed","Thu May 22 17:27:31 UTC 2025","Room API Tests","api/hotel-room.api.spec.ts","",""
-"","1824","Admin should delete a room","@API","Thu May 22 17:27:31 UTC 2025","passed","Thu May 22 17:27:32 UTC 2025","Room API Tests","api/hotel-room.api.spec.ts","",""

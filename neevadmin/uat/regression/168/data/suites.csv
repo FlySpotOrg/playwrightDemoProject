@@ -1,2 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","3006","User should get a specific room by ID","@API","Thu May 22 18:30:06 UTC 2025","passed","Thu May 22 18:30:09 UTC 2025","Room API Tests","api/hotel-room.api.spec.ts","",""

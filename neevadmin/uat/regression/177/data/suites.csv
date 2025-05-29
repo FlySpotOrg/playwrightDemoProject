@@ -1,6 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","6364","User should be able to book a room","firefox","Wed May 28 20:26:29 UTC 2025","passed","Wed May 28 20:26:36 UTC 2025","@neevadmin-compass-integration @UI Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
-"","6369","User should get all rooms","firefox","Wed May 28 20:26:20 UTC 2025","passed","Wed May 28 20:26:26 UTC 2025","@neevadmin @API Room Tests","api/hotel-room.api.spec.ts","",""
-"","1523","User should be able to submit contact form","firefox","Wed May 28 20:26:36 UTC 2025","passed","Wed May 28 20:26:38 UTC 2025","@neevadmin-compass-integration @UI Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
-"","2744","Admin should handle login","firefox","Wed May 28 20:26:38 UTC 2025","passed","Wed May 28 20:26:40 UTC 2025","@neevadmin-compass-integration @UI Hotel Booking Website Tests","ui/hotel-room.ui.spec.ts","",""
-"","2916","User should get a specific room by ID","firefox","Wed May 28 20:26:26 UTC 2025","passed","Wed May 28 20:26:29 UTC 2025","@neevadmin @API Room Tests","api/hotel-room.api.spec.ts","",""

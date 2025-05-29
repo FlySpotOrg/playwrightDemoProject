@@ -1,2 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","1915","User should get a specific room by ID","chromium","Wed May 28 21:33:50 UTC 2025","passed","Wed May 28 21:33:52 UTC 2025","@neevadmin @API Room Tests","api/hotel-room.api.spec.ts","",""
