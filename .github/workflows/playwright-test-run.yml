@@ -360,7 +360,7 @@ jobs:
         run: |
           set -e
           cd gh-pages
-          for path in $(find . -type d -path "./*/" -mindepth 3 -maxdepth 3); do
+          for path in $(find . -type d -mindepth 3 -maxdepth 3); do
             cd "$path"
             runs=($(ls -d [0-9]*/ 2>/dev/null | sort -V | sed 's:/$::'))
             if [ ${#runs[@]} -gt 5 ]; then
