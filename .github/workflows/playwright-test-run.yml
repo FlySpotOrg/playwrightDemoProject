@@ -373,6 +373,10 @@ jobs:
             cd - > /dev/null
           done
 
+          git add -A
+          git commit -m "Cleanup old reports: keep latest 5"
+          git push origin gh-pages
+
       - name: Fail job if tests failed
         if: steps.run_tests.outputs.test_status == 'failure'
         run: |
