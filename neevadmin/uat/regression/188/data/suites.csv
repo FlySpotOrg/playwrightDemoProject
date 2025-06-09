@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","6651","User should get all rooms","mobile-Safari-iPhone-15","Wed May 28 22:34:56 UTC 2025","passed","Wed May 28 22:35:03 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
-"","2639","User should get a specific room by ID","mobile-Safari-iPhone-15","Wed May 28 22:35:03 UTC 2025","passed","Wed May 28 22:35:05 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
