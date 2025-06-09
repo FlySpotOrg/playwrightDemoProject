@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","2386","User should get a specific room by ID","chrome","Mon Jun 09 14:12:40 UTC 2025","passed","Mon Jun 09 14:12:43 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
-"","7166","User should get all rooms","chrome","Mon Jun 09 14:12:33 UTC 2025","passed","Mon Jun 09 14:12:40 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
