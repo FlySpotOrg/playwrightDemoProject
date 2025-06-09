@@ -197,6 +197,31 @@ jobs:
             echo "| $desc | \`$value\` |" >> $GITHUB_STEP_SUMMARY
           done
 
+      - name: Notify Slack with test summary
+        if: always()
+        run: |
+          echo "📣 Sending test results to Slack..."
+          REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+
+          MESSAGE=$(cat <<EOF
+          *🎯 Playwright Test Run Result*
+          *Application:* \`${{ env.APPLICATION }}\`
+          *Environment:* \`${{ env.ENV }}\`
+          *Scope:* \`${{ env.TEST_SCOPE }}\`
+          *Type:* \`${{ github.event.inputs.test_type || 'ALL' }}\`
+          *Browser:* \`${{ github.event.inputs.browser || 'chrome' }}\`
+          *Tags:* Include \`${{ github.event.inputs.include_tags || '-' }}\`, Exclude \`${{ github.event.inputs.exclude_tags || '-' }}\`
+          *Triggered by:* \`${{ github.actor }}\`
+          *Report:* ${REPORT_URL}
+          EOF
+          )
+
+          npx dotenvx run -- curl -X POST \
+            -H 'Content-type: application/json' \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            --data "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"${MESSAGE}\"}" \
+            https://slack.com/api/chat.postMessage
+
       - name: Checkout gh-pages branch
         if: always()
         uses: actions/checkout@v4
