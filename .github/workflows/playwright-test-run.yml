@@ -207,8 +207,8 @@ jobs:
 
             curl -X POST \
               -H "Content-type: application/json" \
-              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-              --data "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"${MESSAGE}\"}" \
+              -H "Authorization: Bearer $secrets.SLACK_BOT_TOKEN" \
+              --data "{\"channel\":\"$secrets.SLACK_CHANNEL_ID\",\"text\":\"${MESSAGE}\"}" \
               https://slack.com/api/chat.postMessage
           '
 
