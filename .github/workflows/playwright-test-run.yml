@@ -281,7 +281,7 @@ jobs:
             "name": "GitHub Actions",
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "buildOrder": "${{ github.run_number }}",
+            "buildOrder": "${{ env.REPORT_TIMESTAMP }}",
             "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.REPORT_TIMESTAMP }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
