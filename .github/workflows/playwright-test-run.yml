@@ -281,8 +281,8 @@ jobs:
             "name": "GitHub Actions",
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "buildOrder": "${{ env.REPORT_TIMESTAMP }}",
-            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.REPORT_TIMESTAMP }}",
+            "buildOrder": "${{ github.run_number }}",
+            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
             "executor": "GitHub Actions"
@@ -310,7 +310,7 @@ jobs:
 
       - name: Generate Allure report
         run: |
-          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.REPORT_TIMESTAMP }}"
+          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
