@@ -159,6 +159,7 @@ jobs:
           echo "exclude_regex=$EXCLUDE_REGEX" >> $GITHUB_OUTPUT
 
       - name: Run Playwright Tests
+        id: run_tests
         env:
           env: ${{ github.event.inputs.env }}
         continue-on-error: true
@@ -173,7 +174,11 @@ jobs:
           [ -n "$BROWSER" ] && CMD="$CMD --project=$BROWSER"
 
           echo "Running: $CMD"
-          eval $CMD
+          if eval $CMD; then
+            echo "test_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "test_status=failure" >> $GITHUB_OUTPUT
+          fi
 
       - name: Execution Context Summary
         run: |
