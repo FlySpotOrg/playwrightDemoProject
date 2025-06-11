@@ -204,9 +204,26 @@ jobs:
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
         run: |
           npx dotenvx run -- bash -c '
+            TEST_STATUS="${{ steps.run_tests.outputs.test_status || 'unknown' }}"
+            EMOJI="❓"
+            if [[ "$TEST_STATUS" == "success" ]]; then
+              EMOJI="✅"
+            elif [[ "$TEST_STATUS" == "failure" ]]; then
+              EMOJI="❌"
+            fi
+
             REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
 
-            MESSAGE="*🎯 Playwright Test Run Result*\n*Application:* \`${{ env.APPLICATION }}\`\n*Environment:* \`${{ env.ENV }}\`\n*Scope:* \`${{ env.TEST_SCOPE }}\`\n*Type:* \`${{ github.event.inputs.test_type || 'ALL' }}\`\n*Browser:* \`${{ github.event.inputs.browser || 'chrome' }}\`\n*Tags:* Include \`${{ github.event.inputs.include_tags || '-' }}\`, Exclude \`${{ github.event.inputs.exclude_tags || '-' }}\`\n*Triggered by:* \`${{ github.actor }}\`\n*Report:* ${REPORT_URL}"
+            MESSAGE="*🎯 Playwright Test Run Result:*\n"
+            MESSAGE+="*Status:* ${EMOJI} *${TEST_STATUS^^}*\n"
+            MESSAGE+="*Application:* \`${{ env.APPLICATION }}\`\n"
+            MESSAGE+="*Environment:* \`${{ env.ENV }}\`\n"
+            MESSAGE+="*Scope:* \`${{ env.TEST_SCOPE }}\`\n"
+            MESSAGE+="*Type:* \`${{ github.event.inputs.test_type || 'ALL' }}\`\n"
+            MESSAGE+="*Browser:* \`${{ github.event.inputs.browser || 'chrome' }}\`\n"
+            MESSAGE+="*Tags:* Include \`${{ github.event.inputs.include_tags || '-' }}\`, Exclude \`${{ github.event.inputs.exclude_tags || '-' }}\`\n"
+            MESSAGE+="*Triggered by:* \`${{ github.actor }}\`\n"
+            MESSAGE+="*Report:* ${REPORT_URL}"
 
             curl -X POST \
               -H "Content-type: application/json" \
