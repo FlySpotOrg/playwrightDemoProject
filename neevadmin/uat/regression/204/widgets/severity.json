@@ -1,1 +1,0 @@
-[{"uid":"ac563c97e73b029f","name":"User should get a specific room by ID","time":{"start":1749642796320,"stop":1749642798340,"duration":2020},"status":"passed","severity":"normal"},{"uid":"111ca03b1187dea5","name":"User should get all rooms","time":{"start":1749642791813,"stop":1749642795487,"duration":3674},"status":"failed","severity":"normal"}]
