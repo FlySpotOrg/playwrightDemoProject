@@ -77,7 +77,6 @@ jobs:
       test_status: ${{ steps.run_tests.outputs.test_status }}
 
     env:
-      UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       APPLICATION: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
       ENV: ${{ inputs.env || github.event.client_payload.env || github.event.inputs.env || 'uat' }}
@@ -86,6 +85,11 @@ jobs:
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
+      - name: Set unique run ID
+        id: set_unique_run_id
+        run: |
+          echo "UNIQUE_RUN_ID=$(date -u +'%Y-%m-%d-%H:%M:%S')" >> $GITHUB_ENV
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
