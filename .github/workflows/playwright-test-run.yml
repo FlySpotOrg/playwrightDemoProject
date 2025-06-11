@@ -217,7 +217,7 @@ jobs:
               EMOJI="❌"
             fi
 
-            REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+            REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/"
 
             MESSAGE="*🎯 Playwright Test Run Result:*\n"
             MESSAGE+="*Status:* ${EMOJI} *${TEST_STATUS^^}*\n"
@@ -280,7 +280,7 @@ jobs:
             "buildOrder": "${{ github.run_number }}",
             "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/",
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
             "executor": "GitHub Actions"
           }
           EOF
@@ -406,7 +406,7 @@ jobs:
           cd gh-pages
           for path in $(find . -type d -mindepth 3 -maxdepth 3); do
             cd "$path"
-            runs=($(ls -d [0-9]*/ 2>/dev/null | sort -V | sed 's:/$::'))
+            runs=($(ls -d */ 2>/dev/null | grep -v '^latest/$' | sed 's:/$::' | sort))
             if [ ${#runs[@]} -gt 5 ]; then
               to_delete=("${runs[@]:0:${#runs[@]}-5}")
               for old in "${to_delete[@]}"; do
