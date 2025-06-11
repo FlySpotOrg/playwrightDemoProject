@@ -74,7 +74,7 @@ jobs:
       test_scope: ${{ env.TEST_SCOPE }}
       application: ${{ env.APPLICATION }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
-      test_status: ${{ steps.run_tests.outputs.test_status }}
+      report_timestamp: ${{ env.REPORT_TIMESTAMP }}
 
     env:
       UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
@@ -458,6 +458,7 @@ jobs:
       GITHUB_ORG: ${{ github.repository_owner }}
       GITHUB_REPO: ${{ github.event.repository.name }}
       TEST_STATUS: ${{ needs.run-and-publish.outputs.test_status }}
+      REPORT_TIMESTAMP: ${{ needs.run-and-publish.outputs.report_timestamp }}
 
     outputs:
       report_url: ${{ steps.set_output.outputs.report_url }}
