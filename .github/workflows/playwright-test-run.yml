@@ -537,17 +537,17 @@ jobs:
 
       - name: Post deployment link
         run: |
-          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/"
           echo "✅ Report available at: ${REPORT_URL}"
 
       - name: Set output for report URL
         id: set_output
         run: |
-          echo "report_url=https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/" >> $GITHUB_OUTPUT
+          echo "report_url=https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
-          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}/"
+          REPORT_URL="https://${{ env.GITHUB_ORG }}.github.io/${{ env.GITHUB_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/"
           echo "### 🚀 Allure Report Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "- [View Report](${REPORT_URL})" >> $GITHUB_STEP_SUMMARY
 
