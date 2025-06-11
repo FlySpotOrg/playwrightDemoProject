@@ -15,7 +15,7 @@ test.describe("Room Tests",
       let createdRoom1: Room, createdRoom2: Room, createdRoom3: Room;
 
       await test.step("Given I have three rooms", async () => {
-        const roomSample1 = roomApi.sample(`Single ${getRandomDigits(8)}`, "Single");
+        const roomSample1 = roomApi.sample(`Single ${getRandomDigits(8)}`, "Single2");
         const roomSample2 = roomApi.sample(`Double ${getRandomDigits(8)}`, "Double");
         const roomSample3 = roomApi.sample(`Suite ${getRandomDigits(8)}`, "Suite");
 
