@@ -77,6 +77,7 @@ jobs:
       test_status: ${{ steps.run_tests.outputs.test_status }}
 
     env:
+      UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
       TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
       APPLICATION: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
       ENV: ${{ inputs.env || github.event.client_payload.env || github.event.inputs.env || 'uat' }}
@@ -85,11 +86,6 @@ jobs:
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
 
     steps:
-      - name: Set unique run ID
-        id: set_unique_run_id
-        run: |
-          echo "UNIQUE_RUN_ID=$(date -u +'%Y-%m-%d-%H:%M:%S')" >> $GITHUB_ENV
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -308,13 +304,17 @@ jobs:
             echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           } > allure-results/environment.properties
 
+      - name: Set report timestamp
+        id: set_report_timestamp
+        run: echo "REPORT_TIMESTAMP=$(date -u +'%Y-%m-%d-%H:%M:%S')" >> $GITHUB_ENV
+
       - name: Generate Allure report
         run: |
           REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
-            --output "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}" || {
+            --output "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}" || {
             echo "Failed to generate Allure report"
             exit 1
           }
@@ -342,7 +342,7 @@ jobs:
             local path=$1
             echo "Updating latest report content for $path"
 
-            local latest_run_dir="${UNIQUE_RUN_ID}"
+            local latest_run_dir="${{ env.REPORT_TIMESTAMP }}"
             local source_dir="$path/$latest_run_dir"
             local target_dir="$path/latest"
 
@@ -374,7 +374,7 @@ jobs:
           set -e
           cd gh-pages
           path="${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}"
-          latest_run_dir="${{ env.UNIQUE_RUN_ID }}"
+          latest_run_dir="${{ env.REPORT_TIMESTAMP }}"
           source_dir="$path/$latest_run_dir"
           target_dir="$path/latest"
           
