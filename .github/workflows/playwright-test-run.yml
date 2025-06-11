@@ -180,6 +180,10 @@ jobs:
             echo "test_status=failure" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set report timestamp
+        id: set_report_timestamp
+        run: echo "REPORT_TIMESTAMP=$(date -u +'%Y-%m-%d-%H:%M:%S')" >> $GITHUB_ENV
+
       - name: Execution Context Summary
         run: |
           echo "### 🔍 Trigger Context" >> $GITHUB_STEP_SUMMARY
@@ -257,7 +261,7 @@ jobs:
           LATEST_RUN=$(ls -d gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/*/ 2>/dev/null | sort -V | tail -n 1)
           echo "Latest run found: $LATEST_RUN"
 
-          mkdir -p "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.UNIQUE_RUN_ID }}"
+          mkdir -p "gh-pages/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}"
 
           mkdir -p "allure-results"
           if [ -n "$LATEST_RUN" ]; then
@@ -304,13 +308,9 @@ jobs:
             echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           } > allure-results/environment.properties
 
-      - name: Set report timestamp
-        id: set_report_timestamp
-        run: echo "REPORT_TIMESTAMP=$(date -u +'%Y-%m-%d-%H:%M:%S')" >> $GITHUB_ENV
-
       - name: Generate Allure report
         run: |
-          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.UNIQUE_RUN_ID }}"
+          REPORT_NAME="${{ env.APPLICATION }}-[${{ env.ENV }}-${{ env.TEST_SCOPE }}]-${{ env.REPORT_TIMESTAMP }}"
           echo "Report name will be: $REPORT_NAME"
           npm run allure:generate -- \
             --report-name "$REPORT_NAME" \
