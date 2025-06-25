@@ -1,8 +1,0 @@
-2025-06-25 19:31:41 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/99999
-  → params: undefined
-  → data:   undefined
-  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
-2025-06-25 19:31:41 info: [HTTP RESPONSE] GET /room/99999 → 500
-  ← params: undefined
-  ← data: {"timestamp":"2025-06-25T19:31:41.371+00:00","status":500,"error":"Internal Server Error","path":"/room/99999"}
-  ← headers: {"date":"Wed, 25 Jun 2025 19:31:41 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=NHawdArink2F7hY6fjEUXd0sl0beG7wxx%2BJKEbkrMHZvX7w9%2BWQ5z7yhvQIJPd9QGQg7XXyw9MwumIMyytT%2BoK8z4gN6aVHAOgpJtfh0ndi6K4g0VtbDhw%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9556e2f60e93f642-LAX","alt-svc":"h3=\":443\"; ma=86400"}
