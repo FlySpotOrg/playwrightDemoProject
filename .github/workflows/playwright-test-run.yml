@@ -70,7 +70,7 @@ on:
         type: boolean
         required: false
         default: false
-        
+
   repository_dispatch:
     types: [trigger-playwright-tests]
 
@@ -98,6 +98,7 @@ jobs:
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
+      TRIGGER_URL: ${{ github.event.client_payload.trigger_url || '' }}
 
     steps:
       - name: Checkout code
@@ -236,6 +237,9 @@ jobs:
             desc="${descriptions[$key]:-$key}"
             echo "| $desc | \`$value\` |" >> $GITHUB_STEP_SUMMARY
           done
+          if [ -n "${{ env.TRIGGER_URL }}" ]; then
+            echo "| Triggered From | [View Origin](${{ env.TRIGGER_URL }}) |" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Notify Slack with test summary
         if: always()
@@ -323,6 +327,9 @@ jobs:
           mkdir -p allure-results
           {
             echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+            if [ -n "${{ env.TRIGGER_URL }}" ]; then
+              echo "Triggered_From: ${env.TRIGGER_URL}"
+            fi
             echo "Application: ${{ env.APPLICATION }}"
             echo "Test_Scope: ${{ env.TEST_SCOPE }}"
             echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
