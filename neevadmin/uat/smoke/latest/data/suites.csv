@@ -1,4 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","1674","User should create a new room","chrome","Wed Jun 25 20:48:12 UTC 2025","passed","Wed Jun 25 20:48:13 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
-"","4509","User should get all rooms","chrome","Wed Jun 25 20:48:07 UTC 2025","passed","Wed Jun 25 20:48:12 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
-"","136","User should not get a non-existent room by ID","chrome","Wed Jun 25 20:48:12 UTC 2025","passed","Wed Jun 25 20:48:12 UTC 2025","Room Tests","api/hotel-room.api.spec.ts","",""
