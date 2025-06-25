@@ -44,7 +44,7 @@ test.describe("Room Tests",
 
   test(
     "User should get a specific room by ID",
-    { tag: ["@regression"] },
+    { tag: ["@regression", "@issue"] },
     async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
       let createdRoom: Room, retrievedRoom: Room;
 
