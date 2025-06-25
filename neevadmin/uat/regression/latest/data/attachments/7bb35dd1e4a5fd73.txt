@@ -1,0 +1,44 @@
+2025-06-25 16:58:29 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-06-25 16:58:29 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"7UlBtoT1ZRf54i4n"}
+  ← headers: {"date":"Wed, 25 Jun 2025 16:58:29 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=tkh5dEqffrSyFnpuJV%2BRQKQ0lVSnaDq%2FVoXN%2BLtDZy3ZRpLj5grbfsbnHbKfBBpi9l9XYexJcBSere%2Bk0CekH2TAH5kPHBgKdz5lHRpuDUFpkPlGGI53hA%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9556028d8ae55355-LAX","alt-svc":"h3=\":443\"; ma=86400"}
+2025-06-25 16:58:29 info: Creating new room:
+2025-06-25 16:58:29 info: [HTTP REQUEST] POST https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   {"roomName":"Single 55982132","type":"Single","accessible":true,"description":"A comfortable single room with modern amenities","features":["WiFi","TV","Air Conditioning","Mini Bar"],"image":"https://www.mwtestconsultancy.co.uk/img/room1.png","roomPrice":100}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=7UlBtoT1ZRf54i4n"}
+2025-06-25 16:58:30 info: [HTTP RESPONSE] POST /room/ → 200
+  ← params: undefined
+  ← data: {"success":true}
+  ← headers: {"date":"Wed, 25 Jun 2025 16:58:30 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=9H4aQnUIWcImTRRji2Og%2FyYzSEqRCx2NvhQfPl5JRBkWTGSyRHeFgwsR5QureFUmiQmECoHWHI%2Fpl1YzgVMXuPCwYoPauQBuIxLbW6Ce62frD3VDtML870F%2F\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"955602932c992f2e-LAX","alt-svc":"h3=\":443\"; ma=86400"}
+2025-06-25 16:58:30 info: Successfully created room
+2025-06-25 16:58:30 info: [HTTP REQUEST] GET https://automationintesting.online/api/room/
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=7UlBtoT1ZRf54i4n"}
+2025-06-25 16:58:31 info: [HTTP RESPONSE] GET /room/ → 200
+  ← params: undefined
+  ← data: {"rooms":[{"roomid":1,"roomName":"101","type":"Single","accessible":true,"image":"/images/room1.jpg","description":"Aenean porttitor mauris sit amet lacinia molestie. In posuere accumsan aliquet. Maecenas sit amet nisl massa. Interdum et malesuada fames ac ante.","features":["TV","WiFi","Safe"],"roomPrice":100},{"roomid":2,"roomName":"102","type":"Double","accessible":true,"image":"/images/room2.jpg","description":"Vestibulum sollicitudin, lectus ac mollis consequat, lorem orci ultrices tellus, eleifend euismod tortor dui egestas erat. Phasellus et ipsum nisl. ","features":["TV","Radio","Safe"],"roomPrice":150},{"roomid":3,"roomName":"103","type":"Suite","accessible":true,"image":"/images/room3.jpg","description":"Etiam metus metus, fringilla ac sagittis id, consequat vel neque. Nunc commodo quis nisl nec posuere. Etiam at accumsan ex. ","features":["Radio","WiFi","Safe"],"roomPrice":225},{"roomid":36,"roomName":"11111111111111111111","type":"Double","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.jpg","description":"Please enter a description for this room","features":["WiFi","TV","Radio","Refreshments","Safe","Views"],"roomPrice":500},{"roomid":40,"roomName":"11111111111111111111","type":"Double","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.jpg","description":"Please enter a description for this room","features":["WiFi","TV","Radio","Refreshments","Safe","Views"],"roomPrice":500},{"roomid":41,"roomName":"11111111111111111111","type":"Double","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.jpg","description":"Please enter a description for this room","features":["WiFi","TV","Radio","Refreshments","Safe","Views"],"roomPrice":500},{"roomid":42,"roomName":"11111111111111111111","type":"Double","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.jpg","description":"Please enter a description for this room","features":["WiFi","TV","Radio","Refreshments","Safe","Views"],"roomPrice":500},{"roomid":53,"roomName":"Single 55982132","type":"Single","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.png","description":"A comfortable single room with modern amenities","features":["WiFi","TV","Air Conditioning","Mini Bar"],"roomPrice":100}]}
+  ← headers: {"date":"Wed, 25 Jun 2025 16:58:31 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=M54TvZtN2AlUlXH5X3LdoV1XjY0C3Zfuqky%2FRiDUZjLy1FZY8Cq1gxplRtcOsanew%2FpBmKspljc%2Bgfl2Y1Vnx0KhAYwvcD04gh%2B5hQLyc%2Bj66r%2F%2BDId4vA%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"95560297defef0e0-LAX","alt-svc":"h3=\":443\"; ma=86400"}
+2025-06-25 16:58:31 info: User has been logged out.
+2025-06-25 16:58:31 info: [HTTP REQUEST] POST https://automationintesting.online/api/auth/login
+  → params: undefined
+  → data:   {"username":"admin","password":"password"}
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json"}
+2025-06-25 16:58:31 info: [HTTP RESPONSE] POST /auth/login → 200
+  ← params: undefined
+  ← data: {"token":"Bzkma5kJHbkB1SRr"}
+  ← headers: {"date":"Wed, 25 Jun 2025 16:58:31 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=7pgfvALscXAwQ3Gsg%2Fny5wzpolz59sc80jVUZJ4NjIt2tQyifyCQIyu867LO6sytudXkUbWJmrpQo2xGCojrTnxM6wLPoT%2FwY%2Fxt317vN7YDQXWC6m9v5Q%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9556029a4ffc530d-LAX","alt-svc":"h3=\":443\"; ma=86400"}
+2025-06-25 16:58:31 info: [HTTP REQUEST] DELETE https://automationintesting.online/apiroom/53
+  → params: undefined
+  → data:   undefined
+  → headers:{"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Cookie":"token=Bzkma5kJHbkB1SRr"}
+2025-06-25 16:58:32 info: [HTTP RESPONSE] DELETE room/53 → 200
+  ← params: undefined
+  ← data: {"success":true}
+  ← headers: {"date":"Wed, 25 Jun 2025 16:58:32 GMT","content-type":"application/json","transfer-encoding":"chunked","connection":"close","report-to":"{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=NqqgbDGoNnvO0Q%2F08vI%2Foye%2BmxhDDfmSXnqi3oaxh6uj%2FsZGUWsoMMJLCIavjjO0bvZd5kiz4SYV1bVGg%2Bel78Lm33V%2FgmUGaM9Vdsr%2BjDTuXOD25AhvEQ%3D%3D\"}]}","nel":"{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}","cf-cache-status":"DYNAMIC","server":"cloudflare","cf-ray":"9556029dbbf7532b-LAX","alt-svc":"h3=\":443\"; ma=86400"}
+2025-06-25 16:58:32 info: User has been logged out.
