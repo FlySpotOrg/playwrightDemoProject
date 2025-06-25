@@ -246,6 +246,7 @@ jobs:
           fi
 
       - name: Notify Slack with test summary
+        continue-on-error: true
         if: always()
         run: |
           npx dotenvx run -- bash -c '
