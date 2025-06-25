@@ -1,1 +1,1 @@
-[]
+[{"uid":"8948448f9ae9f4fe","name":"User should get all rooms","time":{"start":1750892996583,"stop":1750893003363,"duration":6780},"status":"passed","severity":"normal"},{"uid":"9e9216319427ea07","name":"User should create a new room","time":{"start":1750893003766,"stop":1750893006320,"duration":2554},"status":"passed","severity":"normal"},{"uid":"f9140457c0fdd410","name":"User should not get a non-existent room by ID","time":{"start":1750893003382,"stop":1750893003762,"duration":380},"status":"passed","severity":"normal"}]
