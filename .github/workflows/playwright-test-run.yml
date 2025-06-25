@@ -81,11 +81,12 @@ permissions:
 
 jobs:
   run-and-publish:
-    name: Run Tests [${{ inputs.application }} | ${{ inputs.env }} | ${{ inputs.test_scope }}]
+    name: Run Tests [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}]
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
       application: ${{ env.APPLICATION }}
+      env: ${{ env.ENV }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
       test_status: ${{ steps.run_tests.outputs.test_status }}
       report_timestamp: ${{ env.REPORT_TIMESTAMP }}
@@ -152,14 +153,14 @@ jobs:
         id: build_grep
         run: |
           INCLUDE=()
-          [ -n "${{ github.event.inputs.application }}" ] && INCLUDE+=("@${{ github.event.inputs.application }}")
-          [ -n "${{ github.event.inputs.test_scope }}" ] && INCLUDE+=("@${{ github.event.inputs.test_scope }}")
-          if [ "${{ github.event.inputs.test_type }}" != "ALL" ]; then
-            INCLUDE+=("@${{ github.event.inputs.test_type }}")
+          [ -n "${{ env.APPLICATION }}" ] && INCLUDE+=("@${{ env.APPLICATION }}")
+          [ -n "${{ env.TEST_SCOPE }}" ] && INCLUDE+=("@${{ env.TEST_SCOPE }}")
+          if [ "${{ env.TEST_TYPE }}" != "ALL" ]; then
+            INCLUDE+=("@${{ env.TEST_TYPE }}")
           fi
 
-          if [ -n "${{ github.event.inputs.include_tags }}" ]; then
-            IFS=',' read -ra TAGS <<< "${{ github.event.inputs.include_tags }}"
+          if [ -n "${{ env.INCLUDE_TAGS }}" ]; then
+            IFS=',' read -ra TAGS <<< "${{ env.INCLUDE_TAGS }}"
             for tag in "${TAGS[@]}"; do
               tag=$(echo "$tag" | xargs) # trim
               [ -n "$tag" ] && INCLUDE+=("$tag")
@@ -171,8 +172,8 @@ jobs:
             INCLUDE_REGEX="${INCLUDE_REGEX}(?=.*(?:^|[\s,])${tag}(?:$|[\s,]))"
           done
 
-          EXCLUDE_TAGS="${{ github.event.inputs.exclude_tags }}"
-          if [ "${{ github.event.inputs.ignore_skip }}" != "true" ]; then
+          EXCLUDE_TAGS="${{ env.EXCLUDE_TAGS }}"
+          if [ "${{ env.IGNORE_SKIP }}" != "true" ]; then
             if [ -n "$EXCLUDE_TAGS" ]; then
               EXCLUDE_TAGS="$EXCLUDE_TAGS,@skip:"
             else
@@ -201,12 +202,12 @@ jobs:
       - name: Run Playwright Tests
         id: run_tests
         env:
-          env: ${{ github.event.inputs.env }}
+          env: ${{ env.ENV }}
         continue-on-error: true
         run: |
           INCLUDE_REGEX="${{ steps.build_grep.outputs.include_regex }}"
           EXCLUDE_REGEX="${{ steps.build_grep.outputs.exclude_regex }}"
-          BROWSER="${{ github.event.inputs.browser }}"
+          BROWSER="${{ env.BROWSER }}"
 
           CMD="npx dotenvx run -- npx playwright test"
           [ -n "$INCLUDE_REGEX" ] && CMD="$CMD --grep '$INCLUDE_REGEX'"
@@ -261,10 +262,9 @@ jobs:
             MESSAGE+="*Application:* \`${{ env.APPLICATION }}\`\n"
             MESSAGE+="*Environment:* \`${{ env.ENV }}\`\n"
             MESSAGE+="*Scope:* \`${{ env.TEST_SCOPE }}\`\n"
-            MESSAGE+="*Type:* \`${{ github.event.inputs.test_type || 'ALL' }}\`\n"
-            MESSAGE+="*Browser:* \`${{ github.event.inputs.browser || 'chrome' }}\`\n"
-            MESSAGE+="*Tags:* Include \`${{ github.event.inputs.include_tags || '-' }}\`, Exclude \`${{ github.event.inputs.exclude_tags || '-' }}\`\n"
-            MESSAGE+="*Run tests with skip tags:* \`${{ github.event.inputs.ignore_skip || 'false' }}\`\n"
+            MESSAGE+="*Type:* \`${{ env.TEST_TYPE || 'ALL' }}\`\n"
+            MESSAGE+="*Browser:* \`${{ env.BROWSER || 'chrome' }}\`\n"
+            MESSAGE+="*Tags:* Include \`${{ env.INCLUDE_TAGS || '-' }}\`, Exclude \`${
             MESSAGE+="*Triggered by User:* \`${{ github.actor }}\`\n"
             if [ -n "$TRIGGER_URL" ]; then
               MESSAGE+="*Triggered from Job:* <$TRIGGER_URL|View Origin>\n"
@@ -497,7 +497,7 @@ jobs:
 
     env:
       APPLICATION: ${{ needs.run-and-publish.outputs.application }}
-      ENV: ${{ github.event.inputs.env || github.event.client_payload.env || 'uat' }}
+      ENV: ${{ needs.run-and-publish.outputs.env || 'uat' }}
       TEST_SCOPE: ${{ needs.run-and-publish.outputs.test_scope }}
       UNIQUE_RUN_ID: ${{ needs.run-and-publish.outputs.run_number }}
       GITHUB_ORG: ${{ github.repository_owner }}
