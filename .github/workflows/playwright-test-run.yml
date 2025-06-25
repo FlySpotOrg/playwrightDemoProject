@@ -92,13 +92,22 @@ jobs:
 
     env:
       UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
-      TEST_SCOPE: ${{ inputs.test_scope || github.event.client_payload.test_scope || github.event.inputs.test_scope || 'regression' }}
-      APPLICATION: ${{ inputs.application || github.event.client_payload.application || github.event.inputs.application || 'neevadmin' }}
-      ENV: ${{ inputs.env || github.event.client_payload.env || github.event.inputs.env || 'uat' }}
+      TEST_SCOPE: ${{ github.event.inputs.test_scope || github.event.client_payload.test_scope }}
+      APPLICATION: ${{ github.event.inputs.application || github.event.client_payload.application }}
+      ENV: ${{ github.event.inputs.env || github.event.client_payload.env }}
       CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
       CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
-      TRIGGER_URL: ${{ github.event.client_payload.trigger_url || '' }}
+      TRIGGER_URL: ${{ github.event.client_payload.trigger_url }}
+      TEST_TYPE: ${{ github.event.inputs.test_type || github.event.client_payload.test_type }}
+      RUN_BRANCH: ${{ github.event.inputs.run_branch || github.event.client_payload.run_branch }}
+      BROWSER: ${{ github.event.inputs.browser || github.event.client_payload.browser }}
+      INCLUDE_TAGS: ${{ github.event.inputs.include_tags || '' }}
+      EXCLUDE_TAGS: ${{ github.event.inputs.exclude_tags || '' }}
+      IGNORE_SKIP: ${{ github.event.inputs.ignore_skip || 'false' }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_EVENT_NAME: ${{ github.event_name }}
 
     steps:
       - name: Checkout code
@@ -221,22 +230,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
-
-          declare -A descriptions
-          descriptions[application]="Application"
-          descriptions[test_scope]="Test scope"
-          descriptions[test_type]="Test type"
-          descriptions[env]="Environment"
-          descriptions[include_tags]="Include tags"
-          descriptions[exclude_tags]="Exclude tags"
-          descriptions[ignore_skip]='Run tests with skip tags (`@skip:JIRA-123` etc)'
-          descriptions[browser]="Browser"
-
-          INPUTS_JSON='${{ toJson(github.event.inputs) }}'
-          echo "$INPUTS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | while IFS== read -r key value; do
-            desc="${descriptions[$key]:-$key}"
-            echo "| $desc | \`$value\` |" >> $GITHUB_STEP_SUMMARY
-          done
+          echo "| Application | \`$APPLICATION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test scope | \`$TEST_SCOPE\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test type | \`$TEST_TYPE\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | \`$ENV\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Include tags | \`$INCLUDE_TAGS\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Exclude tags | \`$EXCLUDE_TAGS\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Run tests with skip tags | \`$IGNORE_SKIP\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Browser | \`$BROWSER\` |" >> $GITHUB_STEP_SUMMARY
           if [ -n "$TRIGGER_URL" ]; then
             echo "| Triggered From | [View Origin]($TRIGGER_URL) |" >> $GITHUB_STEP_SUMMARY
           fi
@@ -330,21 +331,21 @@ jobs:
           mkdir -p allure-results
           {
             echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+            echo "Application: $APPLICATION"
+            echo "Test_Scope: $TEST_SCOPE"
+            echo "Test_Type: $TEST_TYPE"
+            echo "Environment: $ENV"
+            echo "Browser: $BROWSER"
+            echo "Include_Tags: $INCLUDE_TAGS"
+            echo "Exclude_Tags: $EXCLUDE_TAGS"
+            echo "Ignore_Skip: $IGNORE_SKIP"
+            echo "Run_Branch: $RUN_BRANCH"
+            echo "GitHub_Run_ID: $GITHUB_RUN_ID"
+            echo "GitHub_Actor: $GITHUB_ACTOR"
+            echo "GitHub_Event: $GITHUB_EVENT_NAME"
             if [ -n "$TRIGGER_URL" ]; then
               echo "Triggered_From: $TRIGGER_URL"
             fi
-            echo "Application: ${{ env.APPLICATION }}"
-            echo "Test_Scope: ${{ env.TEST_SCOPE }}"
-            echo "Test_Type: ${{ github.event.inputs.test_type || 'ALL' }}"
-            echo "Environment: ${{ env.ENV }}"
-            echo "Browser: ${{ github.event.inputs.browser || 'chrome' }}"
-            echo "Include_Tags: ${{ github.event.inputs.include_tags || '' }}"
-            echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || '' }}"
-            echo "Ignore_Skip: ${{ github.event.inputs.ignore_skip || 'false' }}"
-            echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
-            echo "GitHub_Run_ID: ${{ github.run_id }}"
-            echo "GitHub_Actor: ${{ github.actor }}"
-            echo "GitHub_Event: ${{ github.event_name }}"
             echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           } > allure-results/environment.properties
 
