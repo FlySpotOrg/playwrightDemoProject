@@ -65,8 +65,8 @@ on:
         type: string
         required: false
         default: ""
-      run_issues:
-        description: "Run tests with issues ('@issue' tag)"
+      ignore_skip:
+        description: "Run tests with skip tags ('@skip:JIRA-123' etc)"
         type: boolean
         required: false
         default: false
@@ -159,11 +159,11 @@ jobs:
           done
 
           EXCLUDE_TAGS="${{ github.event.inputs.exclude_tags }}"
-          if [ "${{ github.event.inputs.run_issues }}" != "true" ]; then
+          if [ "${{ github.event.inputs.ignore_skip }}" != "true" ]; then
             if [ -n "$EXCLUDE_TAGS" ]; then
-              EXCLUDE_TAGS="$EXCLUDE_TAGS,@issue"
+              EXCLUDE_TAGS="$EXCLUDE_TAGS,@skip:"
             else
-              EXCLUDE_TAGS="@issue"
+              EXCLUDE_TAGS="@skip:"
             fi
           fi
 
@@ -172,7 +172,12 @@ jobs:
             IFS=',' read -ra TAGS <<< "$EXCLUDE_TAGS"
             for tag in "${TAGS[@]}"; do
               tag=$(echo "$tag" | xargs)
-              [ -n "$tag" ] && EXCLUDE_REGEX="$EXCLUDE_REGEX|(?=.*(?:^|[\s,])$tag(?:$|[\s,]))"
+              if [ "$tag" = "@skip:" ]; then
+                # Match any tag starting with @skip:
+                EXCLUDE_REGEX="$EXCLUDE_REGEX|@skip:[^ ,]*"
+              elif [ -n "$tag" ]; then
+                EXCLUDE_REGEX="$EXCLUDE_REGEX|(?=.*(?:^|[\\s,])$tag(?:$|[\\s,]))"
+              fi
             done
           fi
           EXCLUDE_REGEX="${EXCLUDE_REGEX#|}"
@@ -220,7 +225,7 @@ jobs:
           descriptions[env]="Environment"
           descriptions[include_tags]="Include tags"
           descriptions[exclude_tags]="Exclude tags"
-          descriptions[run_issues]='Run tests with issues (`@issue` tag)'
+          descriptions[ignore_skip]='Run tests with skip tags (`@skip:JIRA-123` etc)'
           descriptions[browser]="Browser"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
@@ -251,7 +256,7 @@ jobs:
             MESSAGE+="*Type:* \`${{ github.event.inputs.test_type || 'ALL' }}\`\n"
             MESSAGE+="*Browser:* \`${{ github.event.inputs.browser || 'chrome' }}\`\n"
             MESSAGE+="*Tags:* Include \`${{ github.event.inputs.include_tags || '-' }}\`, Exclude \`${{ github.event.inputs.exclude_tags || '-' }}\`\n"
-            MESSAGE+="*Run issues:* \`${{ github.event.inputs.run_issues || 'false' }}\`\n"
+            MESSAGE+="*Run tests with skip tags:* \`${{ github.event.inputs.ignore_skip || 'false' }}\`\n"
             MESSAGE+="*Triggered by:* \`${{ github.actor }}\`\n"
             MESSAGE+="*Report:* ${REPORT_URL}"
 
@@ -322,7 +327,7 @@ jobs:
             echo "Browser: ${{ github.event.inputs.browser || 'chrome' }}"
             echo "Include_Tags: ${{ github.event.inputs.include_tags || '' }}"
             echo "Exclude_Tags: ${{ github.event.inputs.exclude_tags || '' }}"
-            echo "Run_Issues: ${{ github.event.inputs.run_issues || 'false' }}"
+            echo "Ignore_Skip: ${{ github.event.inputs.ignore_skip || 'false' }}"
             echo "Run_Branch: ${{ env.CHECKOUT_REF }}"
             echo "GitHub_Run_ID: ${{ github.run_id }}"
             echo "GitHub_Actor: ${{ github.actor }}"
