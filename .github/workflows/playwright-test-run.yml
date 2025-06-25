@@ -105,8 +105,8 @@ jobs:
       TEST_TYPE: ${{ github.event.inputs.test_type || github.event.client_payload.test_type }}
       RUN_BRANCH: ${{ github.event.inputs.run_branch || github.event.client_payload.run_branch }}
       BROWSER: ${{ github.event.inputs.browser || github.event.client_payload.browser }}
-      INCLUDE_TAGS: ${{ github.event.inputs.include_tags || '' }}
-      EXCLUDE_TAGS: ${{ github.event.inputs.exclude_tags || '' }}
+      INCLUDE_TAGS: ${{ github.event.inputs.include_tags || none }}
+      EXCLUDE_TAGS: ${{ github.event.inputs.exclude_tags || none }}
       IGNORE_SKIP: ${{ github.event.inputs.ignore_skip || 'false' }}
       GITHUB_RUN_ID: ${{ github.run_id }}
       GITHUB_ACTOR: ${{ github.actor }}
@@ -322,7 +322,7 @@ jobs:
             "type": "github",
             "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "buildOrder": "${{ github.run_number }}",
-            "buildName": "Playwright Test Run [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}] #${{ env.UNIQUE_RUN_ID }}",
+            "buildName": "Playwright Test Run #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
             "executor": "GitHub Actions"
@@ -363,12 +363,6 @@ jobs:
             exit 1
           }
           echo "Allure report generated successfully"
-
-      - name: Debug gh-pages content
-        run: |
-          cd gh-pages
-          echo "Contents of gh-pages:"
-          find . | sed 's/^/  /'
 
       - name: Set up git credentials
         run: |
