@@ -64,7 +64,12 @@ on:
         description: "Exclude tags (comma separated, e.g. @old,@negative)"
         type: string
         required: false
-        default: "@issue"
+        default: ""
+      exclude_issues:
+        description: "Do not run tests with issues (tests with '@issue' tag)"
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   contents: write
@@ -153,9 +158,19 @@ jobs:
             INCLUDE_REGEX="${INCLUDE_REGEX}(?=.*(?:^|[\s,])${tag}(?:$|[\s,]))"
           done
 
+          # Handle exclude_issues checkbox
+          EXCLUDE_TAGS="${{ github.event.inputs.exclude_tags }}"
+          if [ "${{ github.event.inputs.exclude_issues }}" = "true" ]; then
+            if [ -n "$EXCLUDE_TAGS" ]; then
+              EXCLUDE_TAGS="$EXCLUDE_TAGS,@issue"
+            else
+              EXCLUDE_TAGS="@issue"
+            fi
+          fi
+
           EXCLUDE_REGEX=""
-          if [ -n "${{ github.event.inputs.exclude_tags }}" ]; then
-            IFS=',' read -ra TAGS <<< "${{ github.event.inputs.exclude_tags }}"
+          if [ -n "$EXCLUDE_TAGS" ]; then
+            IFS=',' read -ra TAGS <<< "$EXCLUDE_TAGS"
             for tag in "${TAGS[@]}"; do
               tag=$(echo "$tag" | xargs)
               [ -n "$tag" ] && EXCLUDE_REGEX="$EXCLUDE_REGEX|(?=.*(?:^|[\s,])$tag(?:$|[\s,]))"
@@ -206,6 +221,7 @@ jobs:
           descriptions[env]="Environment"
           descriptions[include_tags]="Include tags"
           descriptions[exclude_tags]="Exclude tags"
+          descriptions[exclude_issues]="Do not run tests with issues"
           descriptions[browser]="Browser"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
