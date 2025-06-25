@@ -221,7 +221,7 @@ jobs:
           descriptions[env]="Environment"
           descriptions[include_tags]="Include tags"
           descriptions[exclude_tags]="Exclude tags"
-          descriptions[run_issues]="Run tests with issues ('@issue' tag)"
+          descriptions[run_issues]="Run tests with issues (`@issue` tag)"
           descriptions[browser]="Browser"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
