@@ -1,1 +1,1 @@
-[{"uid":"814c5690cf614e65","name":"User should create a new room","time":{"start":1750870709237,"stop":1750870712296,"duration":3059},"status":"passed","severity":"normal"}]
+[{"uid":"b0af5cc6aa097e62","name":"User should create a new room","time":{"start":1750894594559,"stop":1750894596136,"duration":1577},"status":"passed","severity":"normal"},{"uid":"d6a822dde49c0d4f","name":"User should get all rooms","time":{"start":1750894590280,"stop":1750894594542,"duration":4262},"status":"passed","severity":"normal"}]
