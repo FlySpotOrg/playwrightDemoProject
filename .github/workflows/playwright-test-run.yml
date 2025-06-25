@@ -83,7 +83,7 @@ permissions:
   
 jobs:
   run-and-publish:
-    name: ${{ github.event_name == 'workflow_dispatch' && 'Run Tests [' + inputs.application + ' | ' + inputs.env + ' | ' + inputs.test_scope + ']' || 'Event Triggered Test Run' }}
+    name: Playwright Test Run
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
