@@ -70,6 +70,9 @@ on:
         type: boolean
         required: false
         default: false
+        
+  repository_dispatch:
+    types: [trigger-playwright-tests]
 
 permissions:
   contents: write
