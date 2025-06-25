@@ -1,0 +1,1 @@
+[{"type":"room","data":{"roomid":18,"roomName":"Double 14976488","type":"Double","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.png","description":"A comfortable double room with modern amenities","features":["WiFi","TV","Air Conditioning","Mini Bar"],"roomPrice":200}}]
