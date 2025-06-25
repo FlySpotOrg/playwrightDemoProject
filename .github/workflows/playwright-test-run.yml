@@ -264,7 +264,10 @@ jobs:
             MESSAGE+="*Browser:* \`${{ github.event.inputs.browser || 'chrome' }}\`\n"
             MESSAGE+="*Tags:* Include \`${{ github.event.inputs.include_tags || '-' }}\`, Exclude \`${{ github.event.inputs.exclude_tags || '-' }}\`\n"
             MESSAGE+="*Run tests with skip tags:* \`${{ github.event.inputs.ignore_skip || 'false' }}\`\n"
-            MESSAGE+="*Triggered by:* \`${{ github.actor }}\`\n"
+            MESSAGE+="*Triggered by User:* \`${{ github.actor }}\`\n"
+            if [ -n "$TRIGGER_URL" ]; then
+              MESSAGE+="*Triggered from Job:* <$TRIGGER_URL|View Origin>\n"
+            fi
             MESSAGE+="*Report:* ${REPORT_URL}"
 
             curl -X POST \
