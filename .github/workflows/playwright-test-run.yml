@@ -3,6 +3,11 @@ name: Playwright Test Runner
 on:
   workflow_dispatch:
     inputs:
+      run_branch:
+        description: "Test project branch"
+        type: string
+        required: false
+        default: "main"
       application:
         description: "Application"
         type: choice
@@ -59,7 +64,7 @@ on:
         description: "Exclude tags (comma separated, e.g. @old,@negative)"
         type: string
         required: false
-        default: ""
+        default: "@issue"
 
 permissions:
   contents: write
@@ -74,6 +79,7 @@ jobs:
       test_scope: ${{ env.TEST_SCOPE }}
       application: ${{ env.APPLICATION }}
       run_number: ${{ env.UNIQUE_RUN_ID }}
+      test_status: ${{ steps.run_tests.outputs.test_status }}
       report_timestamp: ${{ env.REPORT_TIMESTAMP }}
 
     env:
@@ -117,9 +123,11 @@ jobs:
 
       - name: Install dependencies and Playwright
         run: |
+          sudo apt-get install fonts-liberation fonts-dejavu fonts-noto fonts-roboto
           npm ci
           npx playwright install
           npx playwright install-deps
+          npx playwright install msedge
           curl -sfS https://dotenvx.sh/install.sh | sh
 
       - name: Build Playwright grep expression
@@ -208,9 +216,6 @@ jobs:
 
       - name: Notify Slack with test summary
         if: always()
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
         run: |
           npx dotenvx run -- bash -c '
             TEST_STATUS="${{ steps.run_tests.outputs.test_status || 'unknown' }}"
@@ -377,12 +382,12 @@ jobs:
           latest_run_dir="${{ env.REPORT_TIMESTAMP }}"
           source_dir="$path/$latest_run_dir"
           target_dir="$path/latest"
-          
+
           if [ ! -d "$source_dir" ]; then
             echo "Source directory $source_dir does not exist. Skipping."
             exit 0
           fi
-      
+
           rm -rf "$target_dir" || true
           mkdir -p "$target_dir"
           shopt -s nullglob
@@ -400,15 +405,15 @@ jobs:
             git pull --rebase origin gh-pages || true
             git push origin gh-pages
 
-      - name: Cleanup old reports (keep 5 + latest)
+      - name: Cleanup old reports (keep 30 + latest)
         run: |
           set -e
           cd gh-pages
           for path in $(find . -type d -mindepth 3 -maxdepth 3); do
             cd "$path"
             runs=($(ls -d */ 2>/dev/null | grep -v '^latest/$' | sed 's:/$::' | sort))
-            if [ ${#runs[@]} -gt 5 ]; then
-              to_delete=("${runs[@]:0:${#runs[@]}-5}")
+            if [ ${#runs[@]} -gt 30 ]; then
+              to_delete=("${runs[@]:0:${#runs[@]}-30}")
               for old in "${to_delete[@]}"; do
                 echo "Deleting old report folder: $path/$old"
                 rm -rf "$old"
@@ -418,8 +423,12 @@ jobs:
           done
 
           git add -A
-          git commit -m "Cleanup old reports: keep latest 5"
-          git push origin gh-pages
+          if ! git diff --cached --quiet; then
+            git commit -m "Cleanup old reports: keep latest 30"
+            git push origin gh-pages
+          else
+            echo "No changes to commit — skipping commit and push."
+          fi
 
       - name: Fail job if tests failed
         if: steps.run_tests.outputs.test_status == 'failure'
@@ -522,7 +531,7 @@ jobs:
 
             echo "✅ Hierarchical index.html files generated."
           fi
-          
+
           echo "🌲 Contents of site/ directory before upload:"
           ls -R site
           echo "---"

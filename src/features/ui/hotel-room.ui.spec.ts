@@ -60,7 +60,7 @@ test.describe("@neevadmin-compass-integration @UI Hotel Booking Website Tests", 
     }
   );
 
-  test("User should be able to submit contact form", { tag: ["@regression"] }, async ({}) => {
+  test("User should be able to submit contact form", { tag: ["@regression", "@issue"] }, async ({}) => {
     const contactFormData: ContactForm = {
       name: "Jane Smith",
       email: "jane.smith@example.com",
