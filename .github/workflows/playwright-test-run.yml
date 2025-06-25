@@ -105,8 +105,8 @@ jobs:
       TEST_TYPE: ${{ github.event.inputs.test_type || github.event.client_payload.test_type }}
       RUN_BRANCH: ${{ github.event.inputs.run_branch || github.event.client_payload.run_branch }}
       BROWSER: ${{ github.event.inputs.browser || github.event.client_payload.browser }}
-      INCLUDE_TAGS: ${{ github.event.inputs.include_tags || none }}
-      EXCLUDE_TAGS: ${{ github.event.inputs.exclude_tags || none }}
+      INCLUDE_TAGS: ${{ github.event.inputs.include_tags || '' }}
+      EXCLUDE_TAGS: ${{ github.event.inputs.exclude_tags || '' }}
       IGNORE_SKIP: ${{ github.event.inputs.ignore_skip || 'false' }}
       GITHUB_RUN_ID: ${{ github.run_id }}
       GITHUB_ACTOR: ${{ github.actor }}
