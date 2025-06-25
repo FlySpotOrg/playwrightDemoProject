@@ -79,9 +79,11 @@ permissions:
   pages: write
   id-token: write
 
+
+  
 jobs:
   run-and-publish:
-    name: Run Tests [${{ env.APPLICATION }} | ${{ env.ENV }} | ${{ env.TEST_SCOPE }}]
+    name: ${{ github.event_name == 'workflow_dispatch' && 'Run Tests [' + inputs.application + ' | ' + inputs.env + ' | ' + inputs.test_scope + ']' || 'Event Triggered Test Run' }}
     runs-on: ubuntu-latest
     outputs:
       test_scope: ${{ env.TEST_SCOPE }}
