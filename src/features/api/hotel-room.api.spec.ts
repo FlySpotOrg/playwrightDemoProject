@@ -68,7 +68,7 @@ test.describe("Room Tests",
   );
 
   test("User should not get a non-existent room by ID",
-    { tag: ["@smoke"] },
+    { tag: ["@smoke", "@regression", "@old"] },
      async ({ roomApiHelper: roomApi }) => {
     let response: AxiosResponse<Room>;
     let nonExistentId: number;
@@ -87,7 +87,7 @@ test.describe("Room Tests",
   });
 
   test("User should create a new room",
-    { tag: ["@smoke"] },
+    { tag: ["@smoke", "@regression"] },
     async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
     let roomParams: Room, createdRoom: Room;
 
