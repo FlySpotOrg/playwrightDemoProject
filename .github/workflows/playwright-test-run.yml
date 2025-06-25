@@ -158,7 +158,6 @@ jobs:
             INCLUDE_REGEX="${INCLUDE_REGEX}(?=.*(?:^|[\s,])${tag}(?:$|[\s,]))"
           done
 
-          # Handle run_issues checkbox (exclude @issue unless run_issues is true)
           EXCLUDE_TAGS="${{ github.event.inputs.exclude_tags }}"
           if [ "${{ github.event.inputs.run_issues }}" != "true" ]; then
             if [ -n "$EXCLUDE_TAGS" ]; then
@@ -221,7 +220,7 @@ jobs:
           descriptions[env]="Environment"
           descriptions[include_tags]="Include tags"
           descriptions[exclude_tags]="Exclude tags"
-          descriptions[run_issues]="Run tests with issues (`@issue` tag)"
+          descriptions[run_issues]='Run tests with issues (`@issue` tag)'
           descriptions[browser]="Browser"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
