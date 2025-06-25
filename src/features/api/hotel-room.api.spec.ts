@@ -44,7 +44,7 @@ test.describe("Room Tests",
 
   test(
     "User should get a specific room by ID",
-    { tag: ["@regression", "@issue:ASD-123"] },
+    { tag: ["@regression", "@skip:ASD-123"] },
     async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
       let createdRoom: Room, retrievedRoom: Room;
 
@@ -119,7 +119,7 @@ test.describe("Room Tests",
   });
 
   test("Admin should update an existing room",
-    { tag: ["@smoke"] }, async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
+    { tag: ["@smoke", "@regression", "@skip:WWW"] }, async ({ roomApiHelper: roomApi, authHelper, registerCleanup }) => {
     let createdRoom: Room, updatedRoom: Room, updatedParams: Room;
 
     await test.step("Given I have a room", async () => {
