@@ -65,11 +65,11 @@ on:
         type: string
         required: false
         default: ""
-      exclude_issues:
-        description: "Do not run tests with issues (tests with '@issue' tag)"
+      run_issues:
+        description: "Run tests with issues ('@issue' tag)"
         type: boolean
         required: false
-        default: true
+        default: false
 
 permissions:
   contents: write
@@ -158,9 +158,9 @@ jobs:
             INCLUDE_REGEX="${INCLUDE_REGEX}(?=.*(?:^|[\s,])${tag}(?:$|[\s,]))"
           done
 
-          # Handle exclude_issues checkbox
+          # Handle run_issues checkbox (exclude @issue unless run_issues is true)
           EXCLUDE_TAGS="${{ github.event.inputs.exclude_tags }}"
-          if [ "${{ github.event.inputs.exclude_issues }}" = "true" ]; then
+          if [ "${{ github.event.inputs.run_issues }}" != "true" ]; then
             if [ -n "$EXCLUDE_TAGS" ]; then
               EXCLUDE_TAGS="$EXCLUDE_TAGS,@issue"
             else
@@ -221,7 +221,7 @@ jobs:
           descriptions[env]="Environment"
           descriptions[include_tags]="Include tags"
           descriptions[exclude_tags]="Exclude tags"
-          descriptions[exclude_issues]="Do not run tests with issues"
+          descriptions[run_issues]="Run tests with issues ('@issue' tag)"
           descriptions[browser]="Browser"
 
           INPUTS_JSON='${{ toJson(github.event.inputs) }}'
