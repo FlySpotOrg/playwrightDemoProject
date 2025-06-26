@@ -1,0 +1,1 @@
+[{"type":"room","data":{"roomid":7,"roomName":"Single 40636212","type":"Single","accessible":true,"image":"https://www.mwtestconsultancy.co.uk/img/room1.png","description":"A comfortable single room with modern amenities","features":["WiFi","TV","Air Conditioning","Mini Bar"],"roomPrice":100}}]
