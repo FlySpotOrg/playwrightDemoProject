@@ -140,15 +140,16 @@ jobs:
       UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
       CURRENT_REPO: ${{ github.repository }}
       DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
+      TEST_REPO: playwrightDemoProject
 
     steps:
-      - name: Checkout code
+      - name: Checkout test repo (always playwrightDemoProject)
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.CURRENT_REPO }}
+          repository: ${{ github.repository_owner }}/${{ env.TEST_REPO }}
+          ref: ${{ env.RUN_BRANCH }}
           fetch-depth: 0
           persist-credentials: true
-          ref: ${{ env.RUN_BRANCH }}
 
       - name: Rename current run with dispatch ID
         if: env.DISPATCH_ID != 'none'
@@ -298,16 +299,13 @@ jobs:
             --data "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"${MESSAGE}\"}" \
             https://slack.com/api/chat.postMessage
 
-      - name: Checkout gh-pages branch
-        if: always()
+      - name: Checkout gh-pages branch (always playwrightDemoProject)
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.CURRENT_REPO }}
+          repository: ${{ github.repository_owner }}/${{ env.TEST_REPO }}
           ref: gh-pages
           path: gh-pages
-          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: true
 
       - name: Prepare Allure Report
         if: always()
@@ -341,7 +339,7 @@ jobs:
             "buildOrder": "${{ github.run_number }}",
             "buildName": "Playwright Test Run #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ env.TEST_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
             "executor": "GitHub Actions"
           }
           EOF
@@ -350,7 +348,7 @@ jobs:
         run: |
           mkdir -p allure-results
           {
-            echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+            echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ env.TEST_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
             echo "Application: $APPLICATION"
             echo "Test_Scope: $TEST_SCOPE"
             echo "Test_Type: $TEST_TYPE"
@@ -366,7 +364,7 @@ jobs:
             if [ -n "$TRIGGER_URL" ]; then
               echo "Triggered_From: $TRIGGER_URL"
             fi
-            echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+            echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ env.TEST_REPO }}/"
           } > allure-results/environment.properties
 
       - name: Generate Allure report
@@ -385,7 +383,7 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.CURRENT_REPO }}.git
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/${{ env.TEST_REPO }}.git
 
       - name: Commit and Push Allure Report
         if: always()
