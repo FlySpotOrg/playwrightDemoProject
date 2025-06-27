@@ -66,43 +66,13 @@ on:
         required: false
         default: ""
       ignore_skip:
-        description: "Ignore @skip:* tags (run all tests)"
-        required: false
+        description: "Run tests with skip tags ('@skip:JIRA-123' etc)"
         type: boolean
+        required: false
         default: false
-  workflow_call:
-    inputs:
-      application:
-        required: true
-        type: string
-      test_scope:
-        required: true
-        type: string
-      test_type:
-        required: true
-        type: string
-      env:
-        required: true
-        type: string
-      run_branch:
-        required: true
-        type: string
-      browser:
-        required: true
-        type: string
-      trigger_url:
-        required: false
-        type: string
-      include_tags:
-        required: false
-        type: string
-      exclude_tags:
-        required: false
-        type: string
-      ignore_skip:
-        required: false
-        type: boolean
-        default: false
+
+  repository_dispatch:
+    types: [trigger-playwright-tests]
 
 permissions:
   contents: write
@@ -110,7 +80,7 @@ permissions:
   id-token: write
 
 
-  
+
 jobs:
   run-and-publish:
     name: Playwright Test Run
@@ -124,38 +94,38 @@ jobs:
       report_timestamp: ${{ env.REPORT_TIMESTAMP }}
 
     env:
-      APPLICATION: ${{ inputs.application || github.event.inputs.application }}
-      TEST_SCOPE: ${{ inputs.test_scope || github.event.inputs.test_scope }}
-      TEST_TYPE: ${{ inputs.test_type || github.event.inputs.test_type }}
-      ENV: ${{ inputs.env || github.event.inputs.env }}
-      RUN_BRANCH: ${{ inputs.run_branch || github.event.inputs.run_branch }}
-      BROWSER: ${{ inputs.browser || github.event.inputs.browser }}
-      TRIGGER_URL: ${{ inputs.trigger_url || github.event.inputs.trigger_url }}
-      INCLUDE_TAGS: ${{ inputs.include_tags || github.event.inputs.include_tags || '' }}
-      EXCLUDE_TAGS: ${{ inputs.exclude_tags || github.event.inputs.exclude_tags || '' }}
-      IGNORE_SKIP: ${{ inputs.ignore_skip || github.event.inputs.ignore_skip || 'false' }}
+      UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
+      TEST_SCOPE: ${{ github.event.inputs.test_scope || github.event.client_payload.test_scope }}
+      APPLICATION: ${{ github.event.inputs.application || github.event.client_payload.application }}
+      ENV: ${{ github.event.inputs.env || github.event.client_payload.env }}
+      CHECKOUT_REF: ${{ inputs.run_branch || github.event.client_payload.run_branch || github.event.inputs.run_branch || 'main' }}
+      CURRENT_REPO: ${{ github.repository }}
+      DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
+      TRIGGER_URL: ${{ github.event.client_payload.trigger_url }}
+      TEST_TYPE: ${{ github.event.inputs.test_type || github.event.client_payload.test_type }}
+      RUN_BRANCH: ${{ github.event.inputs.run_branch || github.event.client_payload.run_branch }}
+      BROWSER: ${{ github.event.inputs.browser || github.event.client_payload.browser }}
+      INCLUDE_TAGS: ${{ github.event.inputs.include_tags || '' }}
+      EXCLUDE_TAGS: ${{ github.event.inputs.exclude_tags || '' }}
+      IGNORE_SKIP: ${{ github.event.inputs.ignore_skip || 'false' }}
       GITHUB_RUN_ID: ${{ github.run_id }}
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_EVENT_NAME: ${{ github.event_name }}
-      UNIQUE_RUN_ID: ${{ github.run_number || github.run_id }}
-      CURRENT_REPO: ${{ github.repository }}
-      DISPATCH_ID: ${{ github.event.client_payload.dispatch_id || 'none' }}
-      TEST_REPO: playwrightDemoProject
 
     steps:
-      - name: Checkout test repo (always playwrightDemoProject)
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository_owner }}/${{ env.TEST_REPO }}
-          ref: ${{ env.RUN_BRANCH }}
+          repository: ${{ env.CURRENT_REPO }}
           fetch-depth: 0
           persist-credentials: true
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Rename current run with dispatch ID
         if: env.DISPATCH_ID != 'none'
         run: |
           echo "Renaming current run with DISPATCH_ID=${{ env.DISPATCH_ID }}"
-          RUN_ID=$(gh run list --workflow="Playwright Test Runner" --limit 10 --json databaseId,headBranch,event | jq -r 'map(select(.event=="repository_dispatch" and .headBranch=="${{ env.RUN_BRANCH }}")) | sort_by(.databaseId) | reverse | .[0].databaseId')
+          RUN_ID=$(gh run list --workflow="Playwright Test Runner" --limit 10 --json databaseId,headBranch,event | jq -r 'map(select(.event=="repository_dispatch" and .headBranch=="${{ env.CHECKOUT_REF }}")) | sort_by(.databaseId) | reverse | .[0].databaseId')
           echo "Resolved RUN_ID: $RUN_ID"
           if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
             curl -X PATCH \
@@ -279,33 +249,48 @@ jobs:
         continue-on-error: true
         if: always()
         run: |
-          MESSAGE="*Test Summary*\n"
-          MESSAGE+="*Application:* \`$APPLICATION\`\n"
-          MESSAGE+="*Environment:* \`$ENV\`\n"
-          MESSAGE+="*Test Scope:* \`$TEST_SCOPE\`\n"
-          MESSAGE+="*Test Type:* \`$TEST_TYPE\`\n"
-          MESSAGE+="*Browser:* \`$BROWSER\`\n"
-          MESSAGE+="*Tags:* Include \`$INCLUDE_TAGS\`, Exclude \`$EXCLUDE_TAGS\`\n"
-          MESSAGE+="*Run tests with skip tags:* \`$IGNORE_SKIP\`\n"
-          MESSAGE+="*Triggered by:* \`$GITHUB_ACTOR\`\n"
-          if [ -n "$TRIGGER_URL" ]; then
-            MESSAGE+="*Triggered From:* <$TRIGGER_URL|View Origin>\n"
-          fi
-          MESSAGE+="*Report:* ${REPORT_URL}"
+          npx dotenvx run -- bash -c '
+            TEST_STATUS="${{ steps.run_tests.outputs.test_status || 'unknown' }}"
+            EMOJI="❓"
+            if [[ "$TEST_STATUS" == "success" ]]; then
+              EMOJI="✅"
+            elif [[ "$TEST_STATUS" == "failure" ]]; then
+              EMOJI="❌"
+            fi
 
-          curl -X POST \
-            -H "Content-type: application/json" \
-            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-            --data "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"${MESSAGE}\"}" \
-            https://slack.com/api/chat.postMessage
+            REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/"
 
-      - name: Checkout gh-pages branch (always playwrightDemoProject)
+            MESSAGE="*🎯 Playwright Test Run Result:*\n"
+            MESSAGE+="*Status:* ${EMOJI} *${TEST_STATUS^^}*\n"
+            MESSAGE+="*Application:* \`${{ env.APPLICATION }}\`\n"
+            MESSAGE+="*Environment:* \`${{ env.ENV }}\`\n"
+            MESSAGE+="*Scope:* \`${{ env.TEST_SCOPE }}\`\n"
+            MESSAGE+="*Type:* \`${{ env.TEST_TYPE || 'ALL' }}\`\n"
+            MESSAGE+="*Browser:* \`${{ env.BROWSER || 'chrome' }}\`\n"
+            MESSAGE+="*Tags:* Include \`${{ env.INCLUDE_TAGS || '-' }}\`, Exclude \`${
+            MESSAGE+="*Triggered by User:* \`${{ github.actor }}\`\n"
+            if [ -n "$TRIGGER_URL" ]; then
+              MESSAGE+="*Triggered from Job:* <$TRIGGER_URL|View Origin>\n"
+            fi
+            MESSAGE+="*Report:* ${REPORT_URL}"
+
+            curl -X POST \
+              -H "Content-type: application/json" \
+              -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+              --data "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"${MESSAGE}\"}" \
+              https://slack.com/api/chat.postMessage
+          '
+
+      - name: Checkout gh-pages branch
+        if: always()
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository_owner }}/${{ env.TEST_REPO }}
+          repository: ${{ env.CURRENT_REPO }}
           ref: gh-pages
           path: gh-pages
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Prepare Allure Report
         if: always()
@@ -339,7 +324,7 @@ jobs:
             "buildOrder": "${{ github.run_number }}",
             "buildName": "Playwright Test Run #${{ env.UNIQUE_RUN_ID }}",
             "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ env.TEST_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
+            "reportUrl": "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/${{ env.REPORT_TIMESTAMP }}/",
             "executor": "GitHub Actions"
           }
           EOF
@@ -348,7 +333,7 @@ jobs:
         run: |
           mkdir -p allure-results
           {
-            echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ env.TEST_REPO }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
+            echo "Latest_Report: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ env.APPLICATION }}/${{ env.ENV }}/${{ env.TEST_SCOPE }}/latest/"
             echo "Application: $APPLICATION"
             echo "Test_Scope: $TEST_SCOPE"
             echo "Test_Type: $TEST_TYPE"
@@ -364,7 +349,7 @@ jobs:
             if [ -n "$TRIGGER_URL" ]; then
               echo "Triggered_From: $TRIGGER_URL"
             fi
-            echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ env.TEST_REPO }}/"
+            echo "Reports_Repository: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           } > allure-results/environment.properties
 
       - name: Generate Allure report
@@ -383,7 +368,7 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/${{ env.TEST_REPO }}.git
+          git remote set-url origin https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.CURRENT_REPO }}.git
 
       - name: Commit and Push Allure Report
         if: always()
